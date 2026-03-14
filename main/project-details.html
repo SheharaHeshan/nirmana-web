@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details | Nirmana Constructions</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .navbar:not(.scrolled) {
+            background-color: rgba(26, 26, 26, 0.95);
+        }
+        
+        .project-detail-hero {
+            padding: 150px 0 50px;
+            background-color: var(--color-light);
+        }
+
+        .project-header-info {
+            margin-bottom: 30px;
+        }
+
+        .project-header-info h1 {
+            font-size: 3rem;
+            color: var(--color-dark);
+            margin-bottom: 10px;
+        }
+
+        .project-tags {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background-color: var(--color-dark);
+            color: var(--color-white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .tag.tag-primary {
+            background-color: var(--color-primary);
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 800px;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        /* Modern Photo Grid - Real Estate Style */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 250px;
+            gap: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Specific grid sizing based on index */
+        .photo-item.main {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        /* Lightbox specific */
+        .lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 2001;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+            }
+            .photo-item.main {
+                grid-column: span 1;
+                grid-row: span 1;
+                height: 300px;
+            }
+            .photo-item {
+                height: 200px;
+            }
+            .project-header-info h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="text-red">NIRMANA</span> <span class="text-white">CONSTRUCTIONS</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="projects.html" class="nav-link active">Projects</a></li>
+                <li><a href="index.html#about" class="nav-link">About Us</a></li>
+                <li><a href="index.html#vendors" class="nav-link">Vendors</a></li>
+                <li><a href="index.html#contact" class="nav-link btn-solid">Contact</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" class="mobile-link">Home</a></li>
+                <li><a href="projects.html" class="mobile-link active">Projects</a></li>
+                <li><a href="index.html#about" class="mobile-link">About Us</a></li>
+                <li><a href="index.html#vendors" class="mobile-link">Vendors</a></li>
+                <li><a href="index.html#contact" class="mobile-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Detail Section -->
+    <section class="project-detail-hero">
+        <div class="container">
+            <div class="project-header-info">
+                <div class="project-tags" id="project-tags">
+                    <span class="tag tag-primary">Residential</span>
+                    <span class="tag">Titanium Finish</span>
+                </div>
+                <h1 id="project-title">Loading Project...</h1>
+                <p class="project-description" id="project-desc">
+                    Discover the exceptional quality and precise execution of this featured project. 
+                    Nirmana Constructions delivered this flawless flooring solution conforming to the highest modern standards.
+                </p>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="window.location.href='index.html#contact'">Inquire About Similar Work</button>
+                    <button class="btn btn-outline" style="border-color: var(--color-dark); color: var(--color-dark); margin-left: 10px;" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+                </div>
+            </div>
+
+            <!-- Photos Grid -->
+            <div class="photo-gallery" id="photo-gallery">
+                <!-- Javascript will populate this -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox for Image Viewing -->
+    <div class="lightbox" id="lightbox">
+        <i class="fas fa-times close-btn" onclick="closeLightbox()"></i>
+        <img src="" id="lightbox-img" alt="Gallery Image">
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h2><span class="text-red">NIRMANA</span> <span class="text-white">CONSTRUCTIONS</span></h2>
+                <p>Building tomorrow's surfaces today.</p>
+            </div>
+            <div class="footer-copy">
+                <p>&copy; 2026 Nirmana Constructions. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            let id = params.get('id');
+            
+            // Get actual object from the CMS
+            let project = getProjectById(id);
+            if (!project) {
+                // fallback if missing
+                project = getProjects()[0];
+            }
+
+            document.getElementById('project-title').textContent = project.title;
+            document.title = `${project.title} | Nirmana Details`;
+            document.getElementById('project-tags').innerHTML = `
+                <span class="tag tag-primary">${project.type}</span>
+                <span class="tag">${project.finish}</span>
+            `;
+            
+            if (project.desc) {
+                document.getElementById('project-desc').textContent = project.desc;
+            }
+
+            // Populate Gallery
+            const gallery = document.getElementById('photo-gallery');
+            let galleryHTML = '';
+            
+            let images = project.images && project.images.length > 0 ? project.images : ["img/img1.jpeg"];
+            images.forEach((imgSrc, index) => {
+                let sizeClass = index === 0 ? 'main' : '';
+                galleryHTML += `
+                    <div class="photo-item ${sizeClass}" onclick="openLightbox('${imgSrc}')">
+                        <img src="${imgSrc}" alt="${project.title} Photo ${index+1}">
+                    </div>
+                `;
+            });
+            gallery.innerHTML = galleryHTML;
+        });
+
+        // Lightbox Script
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lightbox-img');
+            lbImg.src = src;
+            lb.classList.add('active');
+            document.body.style.overflow = 'hidden'; // stop page scrolling
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>

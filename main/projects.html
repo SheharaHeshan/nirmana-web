@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Projects | Nirmana Constructions</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.9) 0%, rgba(18, 18, 18, 0.7) 100%), url('img/img5.jpeg') no-repeat center center/cover;
+            padding: 150px 0 80px;
+            text-align: center;
+            color: var(--color-white);
+        }
+
+        .page-title {
+            font-size: 3rem;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .projects-page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .project-card {
+            height: 300px; /* slightly smaller cards for real estate grid feel */
+            border-radius: 8px; /* Adding some rounding to fit modern trends */
+        }
+        
+        .project-card img {
+            border-radius: 8px;
+        }
+
+        .project-info {
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .project-info h3 {
+            font-size: 1.4rem;
+        }
+
+        /* Nav adjustment for subpages to give consistent solid background */
+        .navbar:not(.scrolled) {
+            background-color: rgba(26, 26, 26, 0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="text-red">NIRMANA</span> <span class="text-white">CONSTRUCTIONS</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="projects.html" class="nav-link active">Projects</a></li>
+                <li><a href="index.html#about" class="nav-link">About Us</a></li>
+                <li><a href="index.html#vendors" class="nav-link">Vendors</a></li>
+                <li><a href="index.html#contact" class="nav-link btn-solid">Contact</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" class="mobile-link">Home</a></li>
+                <li><a href="projects.html" class="mobile-link active">Projects</a></li>
+                <li><a href="index.html#about" class="mobile-link">About Us</a></li>
+                <li><a href="index.html#vendors" class="mobile-link">Vendors</a></li>
+                <li><a href="index.html#contact" class="mobile-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container">
+            <h1 class="page-title">ALL <span class="text-red">PROJECTS</span></h1>
+            <div class="divider"></div>
+            <p>Discover our comprehensive catalogue of premium flooring projects delivered globally.</p>
+        </div>
+    </header>
+
+    <!-- Projects Grid Section -->
+    <section class="section projects-section bg-light">
+        <div class="container">
+            <div class="projects-page-grid" id="all-projects">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h2><span class="text-red">NIRMANA</span> <span class="text-white">CONSTRUCTIONS</span></h2>
+                <p>Building tomorrow's surfaces today.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-copy">
+                <p>&copy; 2026 Nirmana Constructions. All rights reserved.</p>
+                <p class="disclaimer">This is a demonstration website.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProjectsGrid('all-projects');
+        });
+    </script>
+</body>
+</html>
