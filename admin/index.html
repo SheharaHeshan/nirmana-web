@@ -19,9 +19,10 @@
         .panel h2 { margin-bottom: 20px; font-size: 1.5rem; color: var(--color-dark); border-bottom: 2px solid var(--color-primary); padding-bottom: 10px; display: inline-block; }
         
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--color-dark); }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: var(--font-body);
+            color: var(--color-dark); background-color: #fff;
         }
         
         .project-list-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -31,6 +32,16 @@
         .action-btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 4px; color: white; font-size: 0.9rem; margin-right: 5px;}
         .edit-btn { background-color: #f39c12; }
         .delete-btn { background-color: var(--color-primary); }
+
+        .project-list-table-wrapper { overflow-x: auto; }
+        .project-list-table { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 600px; }
+        
+        #login-section { max-width: 400px; margin: 100px auto; padding: 0 5%; }
+        #admin-section { display: none; }
+        
+        @media (max-width: 768px) {
+            .flex-row { flex-direction: column !important; gap: 0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -44,7 +55,24 @@
         </div>
     </div>
 
-    <div class="admin-container">
+    <div id="login-section">
+        <div class="panel">
+            <h2>Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-container" id="admin-section">
         <div class="panel">
             <h2 id="form-title">Add New Project</h2>
             <form id="project-form">
@@ -53,7 +81,7 @@
                     <label>Project Title</label>
                     <input type="text" id="title" required>
                 </div>
-                <div style="display: flex; gap: 20px;">
+                <div class="flex-row" style="display: flex; gap: 20px;">
                     <div class="form-group" style="flex: 1;">
                         <label>Sector Type (e.g. Residential, Commercial)</label>
                         <input type="text" id="type" required>
@@ -68,8 +96,9 @@
                     <textarea id="desc" rows="4" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Images (Comma-separated local paths e.g. img/img1.jpeg, img/img2.jpeg)</label>
-                    <input type="text" id="images" placeholder="img/img1.jpeg, img/img2.jpeg" required>
+                    <label>Images (Select one or more images from your device)</label>
+                    <input type="file" id="images-file" accept="image/*" multiple>
+                    <small id="image-status" style="color: #666; display: block; margin-top: 5px;"></small>
                 </div>
                 <button type="submit" class="btn btn-primary" id="save-btn">Save Project</button>
                 <button type="button" class="btn btn-outline" style="background:#666;" onclick="resetForm()">Clear Form</button>
@@ -78,26 +107,61 @@
 
         <div class="panel">
             <h2>Current Projects</h2>
-            <table class="project-list-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Finish</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-project-list">
-                </tbody>
-            </table>
+            <div class="project-list-table-wrapper">
+                <table class="project-list-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Finish</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-project-list">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script src="data.js"></script>
     <script>
+        let currentUploadedImages = [];
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderAdminTable();
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+                if(u === 'admin' && p === '1234') {
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('admin-section').style.display = 'block';
+                    renderAdminTable();
+                } else {
+                    alert('Invalid credentials');
+                }
+            });
+
+            document.getElementById('images-file').addEventListener('change', function(e) {
+                const files = e.target.files;
+                if(files.length > 0) {
+                    currentUploadedImages = [];
+                    let loaded = 0;
+                    document.getElementById('image-status').innerText = 'Loading images...';
+                    for(let i = 0; i < files.length; i++) {
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            currentUploadedImages.push(evt.target.result);
+                            loaded++;
+                            if(loaded === files.length) {
+                                document.getElementById('image-status').innerText = loaded + ' image(s) ready to save.';
+                            }
+                        };
+                        reader.readAsDataURL(files[i]);
+                    }
+                }
+            });
 
             document.getElementById('project-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -132,21 +196,24 @@
             const type = document.getElementById('type').value;
             const finish = document.getElementById('finish').value;
             const desc = document.getElementById('desc').value;
-            const imagesStr = document.getElementById('images').value;
-            const images = imagesStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
-
+            
             let projects = getProjects();
+            let imagesToSave = currentUploadedImages;
             
             if (idVal) {
                 // Update
                 const index = projects.findIndex(p => p.id === parseInt(idVal));
                 if (index > -1) {
-                    projects[index] = { id: parseInt(idVal), title, type, finish, desc, images };
+                    // if no new images were uploaded, keep the old ones
+                    if (imagesToSave.length === 0) {
+                        imagesToSave = projects[index].images;
+                    }
+                    projects[index] = { id: parseInt(idVal), title, type, finish, desc, images: imagesToSave };
                 }
             } else {
                 // Create
                 const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
-                projects.push({ id: newId, title, type, finish, desc, images });
+                projects.push({ id: newId, title, type, finish, desc, images: imagesToSave });
             }
 
             saveProjects(projects);
@@ -165,7 +232,9 @@
             document.getElementById('type').value = project.type;
             document.getElementById('finish').value = project.finish;
             document.getElementById('desc').value = project.desc || "";
-            document.getElementById('images').value = project.images ? project.images.join(', ') : "";
+            document.getElementById('images-file').value = "";
+            currentUploadedImages = [];
+            document.getElementById('image-status').innerText = (project.images && project.images.length > 0) ? project.images.length + " previous image(s) kept. Upload new to replace." : "";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -182,6 +251,8 @@
             document.getElementById('project-form').reset();
             document.getElementById('project-id').value = '';
             document.getElementById('form-title').innerText = "Add New Project";
+            document.getElementById('image-status').innerText = "";
+            currentUploadedImages = [];
         }
     </script>
 </body>
