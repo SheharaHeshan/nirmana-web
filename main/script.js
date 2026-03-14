@@ -1,17 +1,17 @@
 /* script.js */
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
-    
+
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
-        
+
         // Update active nav link based on scroll position
         updateActiveNavLink();
     });
@@ -56,15 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             const targetId = this.getAttribute('href');
-            if(targetId === '#') return;
-            
+            if (targetId === '#') return;
+
             const targetElement = document.querySelector(targetId);
-            if(targetElement) {
+            if (targetElement) {
                 const navHeight = navbar.offsetHeight;
                 const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navHeight;
-                
+
                 window.scrollTo({
                     top: targetPosition,
                     behavior: 'smooth'
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateActiveNavLink() {
         let current = '';
         const navHeight = navbar.offsetHeight;
-        
+
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
             const sectionHeight = section.clientHeight;
@@ -99,22 +99,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Form Submission Details
-           document.getElementById('contactForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            
+    const form = document.getElementById('contactForm');
+
+    if (!form) {
+        console.error('contactForm not found');
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log('submit intercepted');
+
+        try {
+            const formData = new FormData(form);
+
             const response = await fetch('https://email-sender.sheshan.workers.dev', {
-            method: 'POST',
-            body: formData
+                method: 'POST',
+                body: formData
             });
 
+            console.log('response status:', response.status);
+
             if (response.ok) {
-            alert('Thank you! Your message has been sent to us.');
-            e.target.reset();
+                alert('Thank you! Your message has been sent to us.');
+                form.reset();
             } else {
-            alert('Something went wrong. Please try again.');
+                const text = await response.text();
+                console.error('server returned error:', text);
+                alert('Something went wrong. Please try again.');
             }
-        });
+        } catch (err) {
+            console.error('fetch error:', err);
+            alert('Request failed');
+        }
+    });
 
     // Make project cards clickable for detailed view
     const projectCards = document.querySelectorAll('.project-card');
