@@ -50,7 +50,8 @@
         <div class="container">
             <div class="logo"><span class="text-red">ADMIN</span> <span class="text-white">PANEL</span></div>
             <div>
-                <a href="index.html" class="text-white"><i class="fas fa-home"></i> Back to Site</a>
+                <a href="index.html" class="text-white" style="margin-right: 15px;"><i class="fas fa-home"></i> Back to Site</a>
+                <a href="#" class="text-white" id="logout-btn" style="display: none;" onclick="logoutAdmin(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </div>
@@ -137,6 +138,7 @@
                 if(u === 'admin' && p === '1234') {
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('admin-section').style.display = 'block';
+                    document.getElementById('logout-btn').style.display = 'inline-block';
                     renderAdminTable();
                 } else {
                     alert('Invalid credentials');
@@ -245,6 +247,14 @@
                 saveProjects(projects);
                 renderAdminTable();
             }
+        }
+
+        function logoutAdmin(e) {
+            e.preventDefault();
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('login-form').reset();
         }
 
         function resetForm() {
