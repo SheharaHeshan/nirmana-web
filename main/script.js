@@ -99,15 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Form Submission Details
-    const form = document.getElementById('contactForm');
-    if(form) {
-        form.addEventListener('submit', (e) => {
+           document.getElementById('contactForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Since there is no backend, we just alert a success message
-            alert("Thank you for your message! Our team will get back to you shortly.");
-            form.reset();
+            const formData = new FormData(e.target);
+            
+            const response = await fetch('https://email-sender.sheshan.workers.dev', {
+            method: 'POST',
+            body: formData
+            });
+
+            if (response.ok) {
+            alert('Thank you! Your message has been sent to us.');
+            e.target.reset();
+            } else {
+            alert('Something went wrong. Please try again.');
+            }
         });
-    }
 
     // Make project cards clickable for detailed view
     const projectCards = document.querySelectorAll('.project-card');

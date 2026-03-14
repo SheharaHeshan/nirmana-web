@@ -232,22 +232,7 @@
 
         // Contact Form Submission Handler
 
-        document.getElementById('contactForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    
-    const response = await fetch('https://email-sender.sheshan.workers.dev', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (response.ok) {
-      alert('Thank you! Your message has been sent to us.');
-      e.target.reset();
-    } else {
-      alert('Something went wrong. Please try again.');
-    }
-  });
+        
     </script>
 </body>
 
