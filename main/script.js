@@ -2,6 +2,58 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    function showCustomAlert(title, message, isSuccess = true) {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+        
+        const box = document.createElement('div');
+        box.className = 'custom-alert-box';
+        
+        const icon = document.createElement('i');
+        icon.className = isSuccess ? 'fas fa-check-circle custom-alert-icon' : 'fas fa-exclamation-circle custom-alert-icon';
+        if (isSuccess) {
+            icon.style.color = '#4CAF50'; // Green for success
+        }
+        
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'custom-alert-title';
+        titleEl.textContent = title;
+        
+        const messageEl = document.createElement('p');
+        messageEl.className = 'custom-alert-message';
+        messageEl.textContent = message;
+        
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary custom-alert-btn';
+        btn.textContent = 'OK';
+        
+        box.appendChild(icon);
+        box.appendChild(titleEl);
+        box.appendChild(messageEl);
+        box.appendChild(btn);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            overlay.classList.add('show');
+        });
+        
+        const closeAlert = () => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                if (overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            }, 300);
+        };
+        
+        btn.addEventListener('click', closeAlert);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeAlert();
+        });
+    }
+
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
 
@@ -121,16 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('response status:', response.status);
 
             if (response.ok) {
-                alert('Thank you! Your message has been sent to us.');
+                showCustomAlert('Success!', 'Thank you! Your message has been sent to us.', true);
                 form.reset();
             } else {
                 const text = await response.text();
                 console.error('server returned error:', text);
-                alert('Something went wrong. Please try again.');
+                showCustomAlert('Error!', 'Something went wrong. Please try again.', false);
             }
         } catch (err) {
             console.error('fetch error:', err);
-            alert('Request failed');
+            showCustomAlert('Error!', 'Request failed. Please check your connection.', false);
         }
     });
 
