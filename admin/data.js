@@ -1,8 +1,8 @@
 const DEFAULT_PROJECTS = [
-    { id: 1, title: "Ocean View Villa", type: "Residential", finish: "Titanium Finish", desc: "Premium titanium floor finish providing a sleek and durable surface.", images: ["img/img1.jpeg", "img/img2.jpeg", "img/img3.jpeg"] },
-    { id: 2, title: "Galle Fort Boutique", type: "Commercial", finish: "Polished Concrete", desc: "Industrial-chic polished concrete suitable for high foot traffic.", images: ["img/img2.jpeg", "img/img1.jpeg", "img/img6.jpeg"] },
-    { id: 3, title: "Sunset Apartment Complex", type: "Residential", finish: "Epoxy Coating", desc: "Long-lasting and seamless epoxy coating for modern residential spaces.", images: ["img/img3.jpeg", "img/img4.jpeg", "img/img5.jpeg"] },
-    { id: 4, title: "Southern Heights", type: "Corporate", finish: "Seamless Terrazzo", desc: "Luxurious seamless terrazzo, providing a robust corporate environment.", images: ["img/img4.jpeg", "img/img6.jpeg", "img/img7.jpeg"] },
+    { id: 1, title: "Ocean View Villa", type: "Residential", finish: "Titanium Finish", country: "Sri Lanka", desc: "Premium titanium floor finish providing a sleek and durable surface.", images: ["img/img1.jpeg", "img/img2.jpeg", "img/img3.jpeg"] },
+    { id: 2, title: "Galle Fort Boutique", type: "Commercial", finish: "Polished Concrete", country: "Sri Lanka", desc: "Industrial-chic polished concrete suitable for high foot traffic.", images: ["img/img2.jpeg", "img/img1.jpeg", "img/img6.jpeg"] },
+    { id: 3, title: "Sunset Apartment Complex", type: "Residential", finish: "Epoxy Coating", country: "Australia", desc: "Long-lasting and seamless epoxy coating for modern residential spaces.", images: ["img/img3.jpeg", "img/img4.jpeg", "img/img5.jpeg"] },
+    { id: 4, title: "Southern Heights", type: "Corporate", finish: "Seamless Terrazzo", country: "UAE", desc: "Luxurious seamless terrazzo, providing a robust corporate environment.", images: ["img/img4.jpeg", "img/img6.jpeg", "img/img7.jpeg"] },
 ];
 
 function getProjects() {

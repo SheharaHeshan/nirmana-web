@@ -3,132 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMS Admin | Nirmana Constructions</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <title>Admin Dashboard | Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: var(--color-light); }
-        .admin-nav { background-color: var(--color-dark); padding: 15px 0; color: white; }
-        .admin-nav .container { display: flex; justify-content: space-between; align-items: center; }
-        .admin-nav a { font-weight: bold; }
-        
-        .admin-container { max-width: 1000px; margin: 50px auto; padding: 0 5%; }
-        
-        .panel { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .panel h2 { margin-bottom: 20px; font-size: 1.5rem; color: var(--color-dark); border-bottom: 2px solid var(--color-primary); padding-bottom: 10px; display: inline-block; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--color-dark); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: var(--font-body);
-            color: var(--color-dark); background-color: #fff;
+        :root {
+            --primary: #E63946;
+            --primary-hover: #D62828;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --font-stack: 'Inter', sans-serif;
+            --transition: all 0.2s ease-in-out;
         }
-        
-        .project-list-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .project-list-table th, .project-list-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        .project-list-table th { background: var(--color-dark); color: white; }
-        
-        .action-btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 4px; color: white; font-size: 0.9rem; margin-right: 5px;}
-        .edit-btn { background-color: #f39c12; }
-        .delete-btn { background-color: var(--color-primary); }
 
-        .project-list-table-wrapper { overflow-x: auto; }
-        .project-list-table { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 600px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* typography */
+        h1, h2, h3, h4 { font-weight: 600; color: var(--text-main); }
+        p { color: var(--text-muted); font-size: 0.875rem; }
+
+        /* Shadcn Button */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;
+            padding: 0.5rem 1rem; cursor: pointer; border: none; gap: 0.5rem;
+            transition: var(--transition); text-decoration: none;
+        }
+        .btn-primary { background-color: var(--primary); color: #fff; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background-color: #F1F5F9; }
+        .btn-ghost { background-color: transparent; color: var(--text-main); }
+        .btn-ghost:hover { background-color: #F1F5F9; }
+        .btn-danger { background-color: #FEE2E2; color: #EF4444; }
+        .btn-danger:hover { background-color: #FECACA; }
         
-        #login-section { max-width: 400px; margin: 100px auto; padding: 0 5%; }
+        .btn-sm { padding: 0.25rem 0.6rem; font-size: 0.75rem; }
+
+        /* Shadcn Input */
+        .input-group { margin-bottom: 1rem; }
+        .input-group label {
+            display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main);
+        }
+        .form-control {
+            display: flex; width: 100%; border-radius: 0.375rem; border: 1px solid var(--border-color);
+            background-color: transparent; padding: 0.5rem 0.75rem; font-size: 0.875rem;
+            transition: var(--transition); color: var(--text-main); outline: none; font-family: var(--font-stack);
+        }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(230, 57, 70, 0.2); }
+        .form-control::placeholder { color: #94A3B8; }
+
+        /* Card */
+        .card {
+            background-color: var(--card-bg); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+            padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .card-header {
+            margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;
+        }
+        .card-title { font-size: 1.25rem; margin-bottom: 0.25rem; }
+
+        /* Table */
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; min-width: 600px; }
+        thead th {
+            text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color); background-color: #F8FAFC;
+        }
+        tbody td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-main); vertical-align: middle; }
+        tbody tr:hover { background-color: #F8FAFC; }
+
+        /* Image Preview Gallery */
+        .image-preview-container { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.75rem; }
+        .image-preview { position: relative; width: 80px; height: 80px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
+        .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .image-remove { 
+            position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; 
+            border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .image-remove:hover { background: var(--primary); }
+
+        /* Login Layout */
+        #login-section {
+            display: flex; align-items: center; justify-content: center; min-height: 100vh;
+            background-color: var(--bg-color); padding: 1rem;
+        }
+        .login-card { max-width: 400px; width: 100%; }
+
+        /* Dashboard Layout */
         #admin-section { display: none; }
+        .dashboard-layout { display: flex; min-height: 100vh; }
         
-        @media (max-width: 768px) {
-            .flex-row { flex-direction: column !important; gap: 0 !important; }
+        .sidebar {
+            width: 260px; background-color: var(--card-bg); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10;
+        }
+        .sidebar-header {
+            padding: 1.5rem; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.25rem; color: var(--primary);
+        }
+        .sidebar-nav { padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem;
+            border-radius: 0.375rem; color: var(--text-muted); font-weight: 500; cursor: pointer;
+            transition: var(--transition); text-decoration: none;
+        }
+        .nav-item:hover { background-color: #F1F5F9; color: var(--text-main); }
+        .nav-item.active { background-color: var(--primary); color: #fff; }
+        .nav-item.active:hover { background-color: var(--primary); }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid var(--border-color); }
+
+        .main-content {
+            flex: 1; margin-left: 260px; display: flex; flex-direction: column; background-color: var(--bg-color);
+        }
+        .topbar {
+            height: 64px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 5;
+        }
+        .content-area { padding: 2rem; max-width: 1200px; width: 100%; margin: 0 auto; }
+
+        /* Sections */
+        .dashboard-section { display: none; animation: fadeIn 0.3s ease; }
+        .dashboard-section.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive Breakpoints */
+        .mobile-only { display: none; }
+        
+        @media (max-width: 1024px) {
+            .dashboard-layout { flex-direction: column; }
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+            .topbar { padding: 0 1rem; }
+            .content-area { padding: 1rem; }
+            
+            .mobile-only { display: flex; }
+            
+            /* Long CRUD behavior for mobile */
+            .dashboard-section { 
+                display: block !important; 
+                margin-bottom: 3rem; 
+                border-bottom: 2px dashed var(--border-color); 
+                padding-bottom: 2rem; 
+            }
+            .dashboard-section:last-child { border-bottom: none; }
+            .section-label { 
+                display: block; font-size: 1.5rem; color: var(--primary); 
+                font-weight: 700; margin-bottom: 1.5rem; text-transform: uppercase; 
+                letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem;
+            }
+        }
+        @media (min-width: 1025px) {
+            .section-label { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-nav">
-        <div class="container">
-            <div class="logo"><span class="text-red">ADMIN</span> <span class="text-white">PANEL</span></div>
-            <div>
-                <a href="index.html" class="text-white" style="margin-right: 15px;"><i class="fas fa-home"></i> Back to Site</a>
-                <a href="#" class="text-white" id="logout-btn" style="display: none;" onclick="logoutAdmin(event)"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-        </div>
-    </div>
-
     <div id="login-section">
-        <div class="panel">
-            <h2>Admin Login</h2>
+        <div class="card login-card">
+            <div class="card-header" style="text-align: center; border-bottom: none;">
+                <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-hammer"></i></div>
+                <h2 class="card-title" style="font-size: 1.75rem;">Welcome Back</h2>
+                <p>Enter your credentials to access the portal</p>
+            </div>
             <form id="login-form">
-                <div class="form-group">
+                <div class="input-group">
                     <label>Username</label>
-                    <input type="text" id="username" required>
+                    <input type="text" class="form-control" id="username" placeholder="admin" required>
                 </div>
-                <div class="form-group">
+                <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="password" required>
+                    <input type="password" class="form-control" id="password" placeholder="••••" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Sign In</button>
             </form>
         </div>
     </div>
 
-    <div class="admin-container" id="admin-section">
-        <div class="panel">
-            <h2 id="form-title">Add New Project</h2>
-            <form id="project-form">
-                <input type="hidden" id="project-id">
-                <div class="form-group">
-                    <label>Project Title</label>
-                    <input type="text" id="title" required>
+    <div id="admin-section">
+        <div class="dashboard-layout">
+            
+            <!-- Sidebar for PC -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-hammer" style="color: var(--primary);"></i> NIRMANA
                 </div>
-                <div class="flex-row" style="display: flex; gap: 20px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Sector Type (e.g. Residential, Commercial)</label>
-                        <input type="text" id="type" required>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Finish Type (e.g. Titanium Finish)</label>
-                        <input type="text" id="finish" required>
-                    </div>
+                <nav class="sidebar-nav">
+                    <a class="nav-item active" data-target="home-section"><i class="fas fa-home"></i> Home</a>
+                    <a class="nav-item" data-target="projects-section"><i class="fas fa-folder-open"></i> Projects</a>
+                    <a class="nav-item" data-target="about-section"><i class="fas fa-info-circle"></i> About</a>
+                    <a class="nav-item" data-target="vendors-section"><i class="fas fa-truck"></i> Vendors</a>
+                    <a class="nav-item" data-target="contact-section"><i class="fas fa-envelope"></i> Contact</a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button class="btn btn-outline" style="width: 100%;" onclick="logoutAdmin(event)"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="desc" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Images (Select one or more images from your device)</label>
-                    <input type="file" id="images-file" accept="image/*" multiple>
-                    <small id="image-status" style="color: #666; display: block; margin-top: 5px;"></small>
-                </div>
-                <button type="submit" class="btn btn-primary" id="save-btn">Save Project</button>
-                <button type="button" class="btn btn-outline" style="background:#666;" onclick="resetForm()">Clear Form</button>
-            </form>
-        </div>
+            </aside>
 
-        <div class="panel">
-            <h2>Current Projects</h2>
-            <div class="project-list-table-wrapper">
-                <table class="project-list-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Finish</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-project-list">
-                    </tbody>
-                </table>
-            </div>
+            <!-- Main Workspace -->
+            <main class="main-content">
+                <header class="topbar">
+                    <div style="font-weight: 600; font-size: 1.125rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="mobile-only"><i class="fas fa-hammer" style="color: var(--primary);"></i> NIRMANA - </span>
+                        Dashboard
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn btn-ghost" onclick="window.location.href='index.html'" title="View Site"><i class="fas fa-globe"></i> <span class="mobile-only-hide">View</span></button>
+                        <button class="btn btn-outline mobile-only" onclick="logoutAdmin(event)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </header>
+
+                <div class="content-area">
+                    <!-- Home Section -->
+                    <div id="home-section" class="dashboard-section active">
+                        <h2 class="section-label"><i class="fas fa-home"></i> Home</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div class="card">
+                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">Total Projects</p>
+                                <h2 style="font-size: 2rem; margin-top: 0.5rem;" id="stat-projects">0</h2>
+                            </div>
+                            <div class="card">
+                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">Active Vendors</p>
+                                <h2 style="font-size: 2rem; margin-top: 0.5rem;">12</h2>
+                            </div>
+                            <div class="card">
+                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">New Messages</p>
+                                <h2 style="font-size: 2rem; margin-top: 0.5rem;">5</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Section -->
+                    <div id="projects-section" class="dashboard-section">
+                        <h2 class="section-label"><i class="fas fa-folder-open"></i> Projects</h2>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title" id="form-title">Create Project</h2>
+                                <p>Fill in the details to add a new project below.</p>
+                            </div>
+                            <form id="project-form">
+                                <input type="hidden" id="project-id">
+                                <div class="input-group">
+                                    <label>Project Title</label>
+                                    <input type="text" class="form-control" id="title" required>
+                                </div>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Sector Type (e.g. Residential)</label>
+                                        <input type="text" class="form-control" id="type" required>
+                                    </div>
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Finish Type</label>
+                                        <input type="text" class="form-control" id="finish" required>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label>Country</label>
+                                    <select class="form-control" id="country" required>
+                                        <option value="">Select a country</option>
+                                        <option value="Sri Lanka">Sri Lanka</option>
+                                        <option value="USA">USA</option>
+                                        <option value="UK">UK</option>
+                                        <option value="Australia">Australia</option>
+                                        <option value="UAE">UAE</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" id="desc" rows="4" required></textarea>
+                                </div>
+                                <div class="input-group">
+                                    <label>Feature Image (Primary)</label>
+                                    <input type="file" class="form-control" style="padding: 0.4rem;" id="feature-image-file" accept="image/*">
+                                    <div id="feature-preview" class="image-preview-container"></div>
+                                </div>
+                                <div class="input-group">
+                                    <label>Gallery Images (Multiple)</label>
+                                    <input type="file" class="form-control" style="padding: 0.4rem;" id="gallery-images-file" accept="image/*" multiple>
+                                    <div id="gallery-preview" class="image-preview-container"></div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                    <button type="submit" class="btn btn-primary" id="save-btn"><i class="fas fa-save"></i> Save Project</button>
+                                    <button type="button" class="btn btn-outline" onclick="resetForm()">Clear</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Project List</h2>
+                                <p>Manage your portfolio projects.</p>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Title</th>
+                                            <th>Country</th>
+                                            <th>Type</th>
+                                            <th>Finish</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-project-list">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Section -->
+                    <div id="about-section" class="dashboard-section">
+                        <h2 class="section-label"><i class="fas fa-info-circle"></i> About</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Company Info</h2>
+                                <p>Update about details displayed on the site.</p>
+                            </div>
+                            <form onsubmit="event.preventDefault(); alert('Saved About Info');">
+                                <div class="input-group">
+                                    <label>Company Story</label>
+                                    <textarea class="form-control" rows="5">Nirmana Constructions provides premium floor solutions...</textarea>
+                                </div>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Years of Experience</label>
+                                        <input type="number" class="form-control" value="15">
+                                    </div>
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Completed Projects</label>
+                                        <input type="number" class="form-control" value="250">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Vendors Section -->
+                    <div id="vendors-section" class="dashboard-section">
+                        <h2 class="section-label"><i class="fas fa-truck"></i> Vendors</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Add Vendor</h2>
+                            </div>
+                            <form onsubmit="event.preventDefault(); alert('Vendor added');">
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Vendor Name</label>
+                                        <input type="text" class="form-control">
+                                    </div>
+                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                        <label>Service / Material</label>
+                                        <input type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Vendor</button>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Vendor</th>
+                                            <th>Material</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Holcim</td>
+                                            <td>Cement</td>
+                                            <td style="text-align: right;">
+                                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div id="contact-section" class="dashboard-section">
+                        <h2 class="section-label"><i class="fas fa-envelope"></i> Contact</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Contact Settings</h2>
+                            </div>
+                            <form onsubmit="event.preventDefault(); alert('Contact settings saved');">
+                                <div class="input-group">
+                                    <label>Email Address</label>
+                                    <input type="email" class="form-control" value="info@nirmana.com">
+                                </div>
+                                <div class="input-group">
+                                    <label>Phone</label>
+                                    <input type="text" class="form-control" value="+1 234 567 8900">
+                                </div>
+                                <div class="input-group">
+                                    <label>Address</label>
+                                    <input type="text" class="form-control" value="123 Builder St.">
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Configuration</button>
+                            </form>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Recent Inquiries</h2>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Name</th>
+                                            <th>Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Oct 10</td>
+                                            <td>John Doe</td>
+                                            <td>Looking for titanium finish...</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oct 08</td>
+                                            <td>Jane Smith</td>
+                                            <td>Residential project quote requested.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
         </div>
     </div>
 
     <script src="data.js"></script>
     <script>
-        let currentUploadedImages = [];
+        let currentFeatureImage = null;
+        let currentGalleryImages = [];
+
+        // Sidebar Navigation specific to PC Dashboard
+        const navItems = document.querySelectorAll('.nav-item');
+        const dashboardSections = document.querySelectorAll('.dashboard-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if(window.innerWidth <= 1024) return; // Keep native css display handling on mobile
+                
+                navItems.forEach(i => i.classList.remove('active'));
+                dashboardSections.forEach(s => s.classList.remove('active'));
+                
+                item.classList.add('active');
+                document.getElementById(item.dataset.target).classList.add('active');
+            });
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-form').addEventListener('submit', function(e) {
@@ -138,93 +493,176 @@
                 if(u === 'admin' && p === '1234') {
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('admin-section').style.display = 'block';
-                    document.getElementById('logout-btn').style.display = 'inline-block';
                     renderAdminTable();
                 } else {
                     alert('Invalid credentials');
                 }
             });
 
-            document.getElementById('images-file').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if(files.length > 0) {
-                    currentUploadedImages = [];
-                    let loaded = 0;
-                    document.getElementById('image-status').innerText = 'Loading images...';
-                    for(let i = 0; i < files.length; i++) {
+            const featureInput = document.getElementById('feature-image-file');
+            if (featureInput) {
+                featureInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if(file) {
                         const reader = new FileReader();
                         reader.onload = function(evt) {
-                            currentUploadedImages.push(evt.target.result);
-                            loaded++;
-                            if(loaded === files.length) {
-                                document.getElementById('image-status').innerText = loaded + ' image(s) ready to save.';
-                            }
+                            currentFeatureImage = evt.target.result;
+                            renderImagePreviews();
                         };
-                        reader.readAsDataURL(files[i]);
+                        reader.readAsDataURL(file);
                     }
-                }
-            });
+                });
+            }
 
-            document.getElementById('project-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveAdminProject();
+            const galleryInput = document.getElementById('gallery-images-file');
+            if (galleryInput) {
+                galleryInput.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    if(files.length > 0) {
+                        let loaded = 0;
+                        for(let i = 0; i < files.length; i++) {
+                            const reader = new FileReader();
+                            reader.onload = function(evt) {
+                                currentGalleryImages.push(evt.target.result);
+                                loaded++;
+                                if(loaded === files.length) {
+                                    renderImagePreviews();
+                                }
+                            };
+                            reader.readAsDataURL(files[i]);
+                        }
+                    }
+                });
+            }
+
+            const projForm = document.getElementById('project-form');
+            if (projForm) {
+                projForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveAdminProject();
+                });
+            }
+            
+            // Re-check display block/none logic upon resize to handle responsive flips
+            window.addEventListener('resize', () => {
+                if(window.innerWidth > 1024) {
+                    // PC mode - enforce only 1 active section
+                    dashboardSections.forEach(s => {
+                        if(!s.classList.contains('active')) s.style.display = 'none';
+                    });
+                } else {
+                    // Mobile mode - clean inline display so !important block takes over
+                    dashboardSections.forEach(s => s.style.display = ''); 
+                }
             });
         });
 
         function renderAdminTable() {
+            if (typeof getProjects !== 'function') return;
             const projects = getProjects();
             const tbody = document.getElementById('admin-project-list');
+            
+            // update stat
+            const statProjects = document.getElementById('stat-projects');
+            if(statProjects) statProjects.innerText = projects.length;
+
             let html = '';
             projects.forEach(p => {
                 html += `
                     <tr>
-                        <td>${p.id}</td>
+                        <td style="font-weight: 500;">#${p.id}</td>
                         <td>${p.title}</td>
+                        <td>${p.country || '-'}</td>
                         <td>${p.type}</td>
                         <td>${p.finish}</td>
-                        <td>
-                            <button class="action-btn edit-btn" onclick="editProject(${p.id})">Edit</button>
-                            <button class="action-btn delete-btn" onclick="deleteProject(${p.id})">Delete</button>
+                        <td style="text-align: right;">
+                            <button class="btn btn-outline btn-sm" onclick="editProject(${p.id})"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
-            tbody.innerHTML = html;
+            if(projects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No projects found.</td></tr>';
+            } else {
+                tbody.innerHTML = html;
+            }
+        }
+
+        function removeFeatureImage() {
+            currentFeatureImage = null;
+            document.getElementById('feature-image-file').value = "";
+            renderImagePreviews();
+        }
+
+        function removeGalleryImage(index) {
+            currentGalleryImages.splice(index, 1);
+            document.getElementById('gallery-images-file').value = "";
+            renderImagePreviews();
+        }
+
+        function renderImagePreviews() {
+            const fContainer = document.getElementById('feature-preview');
+            if (currentFeatureImage) {
+                fContainer.innerHTML = `
+                    <div class="image-preview">
+                        <img src="${currentFeatureImage}">
+                        <button type="button" class="image-remove" onclick="removeFeatureImage()"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            } else {
+                fContainer.innerHTML = '';
+            }
+
+            const gContainer = document.getElementById('gallery-preview');
+            let gHtml = '';
+            currentGalleryImages.forEach((src, idx) => {
+                gHtml += `
+                    <div class="image-preview">
+                        <img src="${src}">
+                        <button type="button" class="image-remove" onclick="removeGalleryImage(${idx})"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            });
+            gContainer.innerHTML = gHtml;
         }
 
         function saveAdminProject() {
+            if (typeof getProjects !== 'function' || typeof saveProjects !== 'function') return;
             const idVal = document.getElementById('project-id').value;
             const title = document.getElementById('title').value;
             const type = document.getElementById('type').value;
             const finish = document.getElementById('finish').value;
+            const country = document.getElementById('country').value;
             const desc = document.getElementById('desc').value;
             
             let projects = getProjects();
-            let imagesToSave = currentUploadedImages;
+            let imagesToSave = [];
+            
+            if (currentFeatureImage) imagesToSave.push(currentFeatureImage);
+            imagesToSave = imagesToSave.concat(currentGalleryImages);
             
             if (idVal) {
-                // Update
                 const index = projects.findIndex(p => p.id === parseInt(idVal));
                 if (index > -1) {
-                    // if no new images were uploaded, keep the old ones
-                    if (imagesToSave.length === 0) {
-                        imagesToSave = projects[index].images;
-                    }
-                    projects[index] = { id: parseInt(idVal), title, type, finish, desc, images: imagesToSave };
+                    projects[index] = { id: parseInt(idVal), title, type, country, finish, desc, images: imagesToSave };
                 }
             } else {
-                // Create
+                if (imagesToSave.length === 0) {
+                    alert("Please provide at least a feature image.");
+                    return;
+                }
                 const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
-                projects.push({ id: newId, title, type, finish, desc, images: imagesToSave });
+                projects.push({ id: newId, title, type, country, finish, desc, images: imagesToSave });
             }
 
             saveProjects(projects);
             resetForm();
             renderAdminTable();
-            alert("Project saved successfully.");
         }
 
         function editProject(id) {
+            if (typeof getProjectById !== 'function') return;
             const project = getProjectById(id);
             if (!project) return;
             
@@ -233,14 +671,26 @@
             document.getElementById('title').value = project.title;
             document.getElementById('type').value = project.type;
             document.getElementById('finish').value = project.finish;
+            document.getElementById('country').value = project.country || "";
             document.getElementById('desc').value = project.desc || "";
-            document.getElementById('images-file').value = "";
-            currentUploadedImages = [];
-            document.getElementById('image-status').innerText = (project.images && project.images.length > 0) ? project.images.length + " previous image(s) kept. Upload new to replace." : "";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('feature-image-file').value = "";
+            document.getElementById('gallery-images-file').value = "";
+            
+            if (project.images && project.images.length > 0) {
+                currentFeatureImage = project.images[0];
+                currentGalleryImages = project.images.slice(1);
+            } else {
+                currentFeatureImage = null;
+                currentGalleryImages = [];
+            }
+            renderImagePreviews();
+            
+            // Scroll to form smoothly
+            document.getElementById('project-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function deleteProject(id) {
+            if (typeof getProjects !== 'function' || typeof saveProjects !== 'function') return;
             if(confirm("Are you sure you want to delete this project?")) {
                 let projects = getProjects();
                 projects = projects.filter(p => p.id !== id);
@@ -251,18 +701,18 @@
 
         function logoutAdmin(e) {
             e.preventDefault();
-            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('login-section').style.display = 'flex';
             document.getElementById('admin-section').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'none';
             document.getElementById('login-form').reset();
         }
 
         function resetForm() {
             document.getElementById('project-form').reset();
             document.getElementById('project-id').value = '';
-            document.getElementById('form-title').innerText = "Add New Project";
-            document.getElementById('image-status').innerText = "";
-            currentUploadedImages = [];
+            document.getElementById('form-title').innerText = "Create Project";
+            currentFeatureImage = null;
+            currentGalleryImages = [];
+            renderImagePreviews();
         }
     </script>
 </body>
