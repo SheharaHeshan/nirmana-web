@@ -9,14 +9,16 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap"
+        rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .navbar:not(.scrolled) {
             background-color: rgba(26, 26, 26, 0.95);
         }
-        
+
         .project-detail-hero {
             padding: 150px 0 50px;
             background-color: var(--color-light);
@@ -46,7 +48,7 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .tag.tag-primary {
             background-color: var(--color-primary);
         }
@@ -94,23 +96,29 @@
         /* Lightbox specific */
         .lightbox {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: rgba(0, 0, 0, 0.9);
             z-index: 2000;
             display: none;
             justify-content: center;
             align-items: center;
         }
+
         .lightbox.active {
             display: flex;
         }
+
         .lightbox img {
             max-width: 90%;
             max-height: 90%;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s ease;
         }
+
         .close-btn {
             position: absolute;
             top: 30px;
@@ -122,8 +130,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         @media (max-width: 768px) {
@@ -131,14 +146,17 @@
                 grid-template-columns: 1fr;
                 grid-auto-rows: auto;
             }
+
             .photo-item.main {
                 grid-column: span 1;
                 grid-row: span 1;
                 height: 300px;
             }
+
             .photo-item {
                 height: 200px;
             }
+
             .project-header-info h1 {
                 font-size: 2.2rem;
             }
@@ -167,6 +185,9 @@
         </div>
         <!-- Mobile Menu -->
         <div class="mobile-menu" id="mobile-menu">
+            <div class="mobile-menu-close" id="mobile-menu-close">
+                <i class="fas fa-times"></i>
+            </div>
             <ul class="mobile-nav-links">
                 <li><a href="index.html" class="mobile-link">Home</a></li>
                 <li><a href="projects.html" class="mobile-link active">Projects</a></li>
@@ -188,12 +209,16 @@
                 </div>
                 <h1 id="project-title">Loading Project...</h1>
                 <p class="project-description" id="project-desc">
-                    Discover the exceptional quality and precise execution of this featured project. 
-                    Nirmana Constructions delivered this flawless flooring solution conforming to the highest modern standards.
+                    Discover the exceptional quality and precise execution of this featured project.
+                    Nirmana Constructions delivered this flawless flooring solution conforming to the highest modern
+                    standards.
                 </p>
                 <div style="margin-bottom: 20px;">
-                    <button class="btn btn-primary" onclick="window.location.href='index.html#contact'">Inquire About Similar Work</button>
-                    <button class="btn btn-outline" style="border-color: var(--color-dark); color: var(--color-dark); margin-left: 10px;" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button class="btn btn-primary" onclick="window.location.href='index.html#contact'">Inquire About
+                        Similar Work</button>
+                    <button class="btn btn-outline"
+                        style="border-color: var(--color-dark); color: var(--color-dark); margin-left: 10px;"
+                        onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
                 </div>
             </div>
 
@@ -215,7 +240,8 @@
         <div class="container footer-content">
             <div class="footer-brand">
                 <a href="index.html" class="logo">
-                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Constructions" class="site-logo">
+                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Constructions"
+                        class="site-logo">
                 </a>
                 <p>Building tomorrow's surfaces today.</p>
             </div>
@@ -231,7 +257,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             let id = params.get('id');
-            
+
             // Get actual object from the CMS
             let project = getProjectById(id);
             if (!project) {
@@ -245,7 +271,7 @@
                 <span class="tag tag-primary">${project.type}</span>
                 <span class="tag">${project.finish}</span>
             `;
-            
+
             if (project.desc) {
                 document.getElementById('project-desc').textContent = project.desc;
             }
@@ -253,13 +279,13 @@
             // Populate Gallery
             const gallery = document.getElementById('photo-gallery');
             let galleryHTML = '';
-            
+
             let images = project.images && project.images.length > 0 ? project.images : ["img/img1.jpeg"];
             images.forEach((imgSrc, index) => {
                 let sizeClass = index === 0 ? 'main' : '';
                 galleryHTML += `
                     <div class="photo-item ${sizeClass}" onclick="openLightbox('${imgSrc}')">
-                        <img src="${imgSrc}" alt="${project.title} Photo ${index+1}">
+                        <img src="${imgSrc}" alt="${project.title} Photo ${index + 1}">
                     </div>
                 `;
             });
@@ -282,4 +308,5 @@
         }
     </script>
 </body>
+
 </html>

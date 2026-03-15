@@ -95,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hamburger.addEventListener('click', toggleMenu);
 
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', toggleMenu);
+    }
+
     // Close menu when a link is clicked
     mobileLinks.forEach(link => {
         link.addEventListener('click', () => {

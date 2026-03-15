@@ -826,97 +826,11 @@
         }
 
         // Sectors and Finishes Support
-        function renderSectors() {
-            if (typeof getSectors !== 'function') return;
-            const sectors = getSectors();
-            const tbody = document.getElementById('sector-list');
-            const selectEl = document.getElementById('type');
-            
-            let tHtml = '';
-            let sHtml = '<option value="">Select a sector type</option>';
-            
-            sectors.forEach(s => {
-                tHtml += `
-                    <tr>
-                        <td>${s.name}</td>
-                        <td style="text-align: right;">
-                            <button class="btn btn-outline btn-sm" onclick="editSector(${s.id})"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteSector(${s.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-                sHtml += `<option value="${s.name}">${s.name}</option>`;
-            });
-            
-            if (sectors.length === 0) {
-                tHtml = '<tr><td colspan="2" style="text-align: center;">No sectors.</td></tr>';
-            }
-            if (tbody) tbody.innerHTML = tHtml;
-            if (selectEl) selectEl.innerHTML = sHtml;
-        }
-
-        function renderFinishes() {
-            if (typeof getFinishes !== 'function') return;
-            const finishes = getFinishes();
-            const tbody = document.getElementById('finish-list');
-            const selectEl = document.getElementById('finish');
-            
-            let tHtml = '';
-            let fHtml = '<option value="">Select a finish type</option>';
-            
-            finishes.forEach(f => {
-                tHtml += `
-                    <tr>
-                        <td>${f.name}</td>
-                        <td style="text-align: right;">
-                            <button class="btn btn-outline btn-sm" onclick="editFinish(${f.id})"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteFinish(${f.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-                fHtml += `<option value="${f.name}">${f.name}</option>`;
-            });
-            
-            if (finishes.length === 0) {
-                tHtml = '<tr><td colspan="2" style="text-align: center;">No finish types.</td></tr>';
-            }
-            if (tbody) tbody.innerHTML = tHtml;
-            if (selectEl) selectEl.innerHTML = fHtml;
-        }
-
-        function saveSector() {
-            const idVal = document.getElementById('sector-id').value;
-            const name = document.getElementById('sector-name').value;
-            let sectors = getSectors();
-
-            if (idVal) {
-                const index = sectors.findIndex(s => s.id === parseInt(idVal));
-                if (index > -1) sectors[index].name = name;
-            } else {
-                const newId = sectors.length > 0 ? Math.max(...sectors.map(s => s.id)) + 1 : 1;
-                sectors.push({ id: newId, name });
-            }
-
-            saveSectors(sectors);
-            resetSectorForm();
-            renderSectors();
-        }
-
-        function editSector(id) {
-            const sector = getSectors().find(s => s.id === id);
-            if (!sector) return;
-            document.getElementById('sector-id').value = sector.id;
-            document.getElementById('sector-name').value = sector.name;
+        function editSector(id, name) {
+            document.getElementById('sector-id').value = id;
+            document.getElementById('sector-name').value = name;
             document.getElementById('save-sector-btn').innerText = "Save";
             document.getElementById('clear-sector-btn').style.display = "inline-flex";
-        }
-
-        function deleteSector(id) {
-            if(confirm("Delete this sector?")) {
-                let sectors = getSectors().filter(s => s.id !== id);
-                saveSectors(sectors);
-                renderSectors();
-            }
         }
 
         function resetSectorForm() {
@@ -926,39 +840,11 @@
             document.getElementById('clear-sector-btn').style.display = "none";
         }
 
-        function saveFinish() {
-            const idVal = document.getElementById('finish-id').value;
-            const name = document.getElementById('finish-name').value;
-            let finishes = getFinishes();
-
-            if (idVal) {
-                const index = finishes.findIndex(f => f.id === parseInt(idVal));
-                if (index > -1) finishes[index].name = name;
-            } else {
-                const newId = finishes.length > 0 ? Math.max(...finishes.map(f => f.id)) + 1 : 1;
-                finishes.push({ id: newId, name });
-            }
-
-            saveFinishes(finishes);
-            resetFinishForm();
-            renderFinishes();
-        }
-
-        function editFinish(id) {
-            const finish = getFinishes().find(f => f.id === id);
-            if (!finish) return;
-            document.getElementById('finish-id').value = finish.id;
-            document.getElementById('finish-name').value = finish.name;
+        function editFinish(id, name) {
+            document.getElementById('finish-id').value = id;
+            document.getElementById('finish-name').value = name;
             document.getElementById('save-finish-btn').innerText = "Save";
             document.getElementById('clear-finish-btn').style.display = "inline-flex";
-        }
-
-        function deleteFinish(id) {
-            if(confirm("Delete this finish type?")) {
-                let finishes = getFinishes().filter(f => f.id !== id);
-                saveFinishes(finishes);
-                renderFinishes();
-            }
         }
 
         function resetFinishForm() {
