@@ -110,8 +110,10 @@
         
         .sidebar {
             width: 260px; background-color: var(--card-bg); border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10;
+            display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100;
+            transition: transform 0.3s ease;
         }
+        .sidebar.collapsed { transform: translateX(-100%); }
         .sidebar-header {
             padding: 1.5rem; border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.25rem; color: var(--primary);
@@ -129,7 +131,9 @@
 
         .main-content {
             flex: 1; margin-left: 260px; display: flex; flex-direction: column; background-color: var(--bg-color);
+            transition: margin-left 0.3s ease;
         }
+        .main-content.expanded { margin-left: 0; }
         .topbar {
             height: 64px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 5;
@@ -142,12 +146,21 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5); z-index: 90;
+            transition: opacity 0.3s ease; opacity: 0;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
         /* Responsive Breakpoints */
         .mobile-only { display: none; }
         
         @media (max-width: 1024px) {
             .dashboard-layout { flex-direction: column; }
-            .sidebar { display: none; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .topbar { padding: 0 1rem; }
             .content-area { padding: 1rem; }
@@ -178,7 +191,7 @@
     <div id="login-section">
         <div class="card login-card">
             <div class="card-header" style="text-align: center; border-bottom: none;">
-                <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-hammer"></i></div>
+                <div style="margin-bottom: 1rem;"><img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 60px; max-width: 100%;"></div>
                 <h2 class="card-title" style="font-size: 1.75rem;">Welcome Back</h2>
                 <p>Enter your credentials to access the portal</p>
             </div>
@@ -198,11 +211,11 @@
 
     <div id="admin-section">
         <div class="dashboard-layout">
-            
+            <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
             <!-- Sidebar for PC -->
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <i class="fas fa-hammer" style="color: var(--primary);"></i> NIRMANA
+                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 36px; max-width: 100%;">
                 </div>
                 <nav class="sidebar-nav">
                     <a class="nav-item active" data-target="home-section"><i class="fas fa-home"></i> Home</a>
@@ -219,8 +232,11 @@
             <!-- Main Workspace -->
             <main class="main-content">
                 <header class="topbar">
-                    <div style="font-weight: 600; font-size: 1.125rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="mobile-only"><i class="fas fa-hammer" style="color: var(--primary);"></i> NIRMANA - </span>
+                    <div style="font-weight: 600; font-size: 1.125rem; color: var(--text-main); display: flex; align-items: center; gap: 0.75rem;">
+                        <button class="btn btn-ghost" style="padding: 0.25rem 0.5rem;" onclick="toggleSidebar()">
+                            <i class="fas fa-bars" style="font-size: 1.25rem;"></i>
+                        </button>
+                        <span class="mobile-only"><img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 30px; margin-right: 10px;"></span>
                         Dashboard
                     </div>
                     <div style="display: flex; gap: 0.75rem;">
@@ -253,6 +269,60 @@
                     <div id="projects-section" class="dashboard-section">
                         <h2 class="section-label"><i class="fas fa-folder-open"></i> Projects</h2>
                         
+                        <!-- Manage Sectors and Finish Types -->
+                        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                            <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                                <div class="card-header">
+                                    <h2 class="card-title">Manage Sectors</h2>
+                                    <p>Add, edit or delete sector types.</p>
+                                </div>
+                                <form id="sector-form">
+                                    <input type="hidden" id="sector-id">
+                                    <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0;">
+                                        <input type="text" class="form-control" id="sector-name" placeholder="New Sector" required>
+                                        <button type="submit" class="btn btn-primary" id="save-sector-btn">Add</button>
+                                        <button type="button" class="btn btn-outline" id="clear-sector-btn" style="display:none;" onclick="resetSectorForm()">Cancel</button>
+                                    </div>
+                                </form>
+                                <div class="table-container" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;">
+                                    <table style="min-width: 100%;">
+                                        <thead style="position: sticky; top: 0;">
+                                            <tr>
+                                                <th>Sector Name</th>
+                                                <th style="text-align: right;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sector-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                                <div class="card-header">
+                                    <h2 class="card-title">Manage Finish Types</h2>
+                                    <p>Add, edit or delete finish types.</p>
+                                </div>
+                                <form id="finish-form">
+                                    <input type="hidden" id="finish-id">
+                                    <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0;">
+                                        <input type="text" class="form-control" id="finish-name" placeholder="New Finish Type" required>
+                                        <button type="submit" class="btn btn-primary" id="save-finish-btn">Add</button>
+                                        <button type="button" class="btn btn-outline" id="clear-finish-btn" style="display:none;" onclick="resetFinishForm()">Cancel</button>
+                                    </div>
+                                </form>
+                                <div class="table-container" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;">
+                                    <table style="min-width: 100%;">
+                                        <thead style="position: sticky; top: 0;">
+                                            <tr>
+                                                <th>Finish Name</th>
+                                                <th style="text-align: right;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="finish-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card">
                             <div class="card-header">
                                 <h2 class="card-title" id="form-title">Create Project</h2>
@@ -266,12 +336,12 @@
                                 </div>
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
-                                        <label>Sector Type (e.g. Residential)</label>
-                                        <input type="text" class="form-control" id="type" required>
+                                        <label>Sector Type</label>
+                                        <select class="form-control" id="type" required></select>
                                     </div>
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Finish Type</label>
-                                        <input type="text" class="form-control" id="finish" required>
+                                        <select class="form-control" id="finish" required></select>
                                     </div>
                                 </div>
                                 <div class="input-group">
@@ -475,7 +545,12 @@
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
-                if(window.innerWidth <= 1024) return; // Keep native css display handling on mobile
+                if(window.innerWidth <= 1024) {
+                    const targetEl = document.getElementById(item.dataset.target);
+                    if(targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
+                    toggleSidebar();
+                    return; 
+                }
                 
                 navItems.forEach(i => i.classList.remove('active'));
                 dashboardSections.forEach(s => s.classList.remove('active'));
@@ -494,6 +569,8 @@
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('admin-section').style.display = 'block';
                     renderAdminTable();
+                    renderSectors();
+                    renderFinishes();
                 } else {
                     alert('Invalid credentials');
                 }
@@ -542,6 +619,22 @@
                     saveAdminProject();
                 });
             }
+
+            const sectorForm = document.getElementById('sector-form');
+            if (sectorForm) {
+                sectorForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveSector();
+                });
+            }
+
+            const finishForm = document.getElementById('finish-form');
+            if (finishForm) {
+                finishForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveFinish();
+                });
+            }
             
             // Re-check display block/none logic upon resize to handle responsive flips
             window.addEventListener('resize', () => {
@@ -550,9 +643,13 @@
                     dashboardSections.forEach(s => {
                         if(!s.classList.contains('active')) s.style.display = 'none';
                     });
+                    document.querySelector('.sidebar').classList.remove('active');
+                    document.querySelector('.sidebar-overlay').classList.remove('active');
                 } else {
                     // Mobile mode - clean inline display so !important block takes over
                     dashboardSections.forEach(s => s.style.display = ''); 
+                    document.querySelector('.sidebar').classList.remove('collapsed');
+                    document.querySelector('.main-content').classList.remove('expanded');
                 }
             });
         });
@@ -713,6 +810,162 @@
             currentFeatureImage = null;
             currentGalleryImages = [];
             renderImagePreviews();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+
+        // Sectors and Finishes Support
+        function renderSectors() {
+            if (typeof getSectors !== 'function') return;
+            const sectors = getSectors();
+            const tbody = document.getElementById('sector-list');
+            const selectEl = document.getElementById('type');
+            
+            let tHtml = '';
+            let sHtml = '<option value="">Select a sector type</option>';
+            
+            sectors.forEach(s => {
+                tHtml += `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-outline btn-sm" onclick="editSector(${s.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSector(${s.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                sHtml += `<option value="${s.name}">${s.name}</option>`;
+            });
+            
+            if (sectors.length === 0) {
+                tHtml = '<tr><td colspan="2" style="text-align: center;">No sectors.</td></tr>';
+            }
+            if (tbody) tbody.innerHTML = tHtml;
+            if (selectEl) selectEl.innerHTML = sHtml;
+        }
+
+        function renderFinishes() {
+            if (typeof getFinishes !== 'function') return;
+            const finishes = getFinishes();
+            const tbody = document.getElementById('finish-list');
+            const selectEl = document.getElementById('finish');
+            
+            let tHtml = '';
+            let fHtml = '<option value="">Select a finish type</option>';
+            
+            finishes.forEach(f => {
+                tHtml += `
+                    <tr>
+                        <td>${f.name}</td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-outline btn-sm" onclick="editFinish(${f.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteFinish(${f.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                fHtml += `<option value="${f.name}">${f.name}</option>`;
+            });
+            
+            if (finishes.length === 0) {
+                tHtml = '<tr><td colspan="2" style="text-align: center;">No finish types.</td></tr>';
+            }
+            if (tbody) tbody.innerHTML = tHtml;
+            if (selectEl) selectEl.innerHTML = fHtml;
+        }
+
+        function saveSector() {
+            const idVal = document.getElementById('sector-id').value;
+            const name = document.getElementById('sector-name').value;
+            let sectors = getSectors();
+
+            if (idVal) {
+                const index = sectors.findIndex(s => s.id === parseInt(idVal));
+                if (index > -1) sectors[index].name = name;
+            } else {
+                const newId = sectors.length > 0 ? Math.max(...sectors.map(s => s.id)) + 1 : 1;
+                sectors.push({ id: newId, name });
+            }
+
+            saveSectors(sectors);
+            resetSectorForm();
+            renderSectors();
+        }
+
+        function editSector(id) {
+            const sector = getSectors().find(s => s.id === id);
+            if (!sector) return;
+            document.getElementById('sector-id').value = sector.id;
+            document.getElementById('sector-name').value = sector.name;
+            document.getElementById('save-sector-btn').innerText = "Save";
+            document.getElementById('clear-sector-btn').style.display = "inline-flex";
+        }
+
+        function deleteSector(id) {
+            if(confirm("Delete this sector?")) {
+                let sectors = getSectors().filter(s => s.id !== id);
+                saveSectors(sectors);
+                renderSectors();
+            }
+        }
+
+        function resetSectorForm() {
+            document.getElementById('sector-form').reset();
+            document.getElementById('sector-id').value = '';
+            document.getElementById('save-sector-btn').innerText = "Add";
+            document.getElementById('clear-sector-btn').style.display = "none";
+        }
+
+        function saveFinish() {
+            const idVal = document.getElementById('finish-id').value;
+            const name = document.getElementById('finish-name').value;
+            let finishes = getFinishes();
+
+            if (idVal) {
+                const index = finishes.findIndex(f => f.id === parseInt(idVal));
+                if (index > -1) finishes[index].name = name;
+            } else {
+                const newId = finishes.length > 0 ? Math.max(...finishes.map(f => f.id)) + 1 : 1;
+                finishes.push({ id: newId, name });
+            }
+
+            saveFinishes(finishes);
+            resetFinishForm();
+            renderFinishes();
+        }
+
+        function editFinish(id) {
+            const finish = getFinishes().find(f => f.id === id);
+            if (!finish) return;
+            document.getElementById('finish-id').value = finish.id;
+            document.getElementById('finish-name').value = finish.name;
+            document.getElementById('save-finish-btn').innerText = "Save";
+            document.getElementById('clear-finish-btn').style.display = "inline-flex";
+        }
+
+        function deleteFinish(id) {
+            if(confirm("Delete this finish type?")) {
+                let finishes = getFinishes().filter(f => f.id !== id);
+                saveFinishes(finishes);
+                renderFinishes();
+            }
+        }
+
+        function resetFinishForm() {
+            document.getElementById('finish-form').reset();
+            document.getElementById('finish-id').value = '';
+            document.getElementById('save-finish-btn').innerText = "Add";
+            document.getElementById('clear-finish-btn').style.display = "none";
         }
     </script>
 </body>

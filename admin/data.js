@@ -5,6 +5,20 @@ const DEFAULT_PROJECTS = [
     { id: 4, title: "Southern Heights", type: "Corporate", finish: "Seamless Terrazzo", country: "UAE", desc: "Luxurious seamless terrazzo, providing a robust corporate environment.", images: ["img/img4.jpeg", "img/img6.jpeg", "img/img7.jpeg"] },
 ];
 
+const DEFAULT_SECTORS = [
+    { id: 1, name: "Residential" },
+    { id: 2, name: "Commercial" },
+    { id: 3, name: "Corporate" },
+    { id: 4, name: "Industrial" }
+];
+
+const DEFAULT_FINISHES = [
+    { id: 1, name: "Titanium Finish" },
+    { id: 2, name: "Polished Concrete" },
+    { id: 3, name: "Epoxy Coating" },
+    { id: 4, name: "Seamless Terrazzo" }
+];
+
 function getProjects() {
     let stored = localStorage.getItem('nirmana_projects');
     if (!stored) {
@@ -45,4 +59,30 @@ function renderProjectsGrid(containerId, limit = null) {
         `;
     });
     container.innerHTML = html;
+}
+
+function getSectors() {
+    let stored = localStorage.getItem('nirmana_sectors');
+    if (!stored) {
+        localStorage.setItem('nirmana_sectors', JSON.stringify(DEFAULT_SECTORS));
+        return DEFAULT_SECTORS;
+    }
+    return JSON.parse(stored);
+}
+
+function saveSectors(sectors) {
+    localStorage.setItem('nirmana_sectors', JSON.stringify(sectors));
+}
+
+function getFinishes() {
+    let stored = localStorage.getItem('nirmana_finishes');
+    if (!stored) {
+        localStorage.setItem('nirmana_finishes', JSON.stringify(DEFAULT_FINISHES));
+        return DEFAULT_FINISHES;
+    }
+    return JSON.parse(stored);
+}
+
+function saveFinishes(finishes) {
+    localStorage.setItem('nirmana_finishes', JSON.stringify(finishes));
 }
