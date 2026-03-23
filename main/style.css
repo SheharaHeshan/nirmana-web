@@ -460,6 +460,77 @@ ul {
     font-size: 1.1rem;
 }
 
+/* Global Reach (About Section) */
+.global-footprint {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footprint-title {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    color: var(--color-dark);
+}
+
+.footprint-locations {
+    display: flex;
+    gap: 20px;
+}
+
+.location-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: var(--color-white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    flex: 1;
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.location-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(230, 57, 70, 0.15); /* var(--color-primary) tint */
+    border-color: rgba(230, 57, 70, 0.3);
+}
+
+.location-flag {
+    width: 50px;
+    height: 35px;
+    border-radius: 4px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.location-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.location-country {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-dark);
+}
+
+.location-role {
+    font-size: 0.9rem;
+    color: var(--color-gray);
+    margin-top: 5px;
+}
+
+@media (max-width: 576px) {
+    .footprint-locations {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
 
 
 /* Vendors Section */
