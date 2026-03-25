@@ -31,6 +31,7 @@ async function getProjects() {
             title: p.title,
             type: sectorName,
             finish: finishName,
+            country: p.country || '',
             desc: p.description,
             // Provide a reliable primary image
             primary_image: p.primary_image || (gal.length > 0 ? gal[0] : 'https://placehold.co/800x600?text=No+Image'),
@@ -63,8 +64,25 @@ async function renderProjectsGrid(containerId, limit = null) {
     let html = '';
     displayProjects.forEach(project => {
         let mainImage = project.primary_image;
+        
+        let countryBadge = '';
+        if (project.country) {
+            const flagMap = {
+                'Sri Lanka': 'lk', 'Maldives': 'mv', 'USA': 'us', 
+                'UK': 'gb', 'Australia': 'au', 'UAE': 'ae'
+            };
+            const code = flagMap[project.country] || 'un';
+            countryBadge = `
+                <div style="position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65); color: #fff; padding: 5px 12px; border-radius: 25px; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); letter-spacing: 0.5px; z-index: 2; border: 1px solid rgba(255,255,255,0.1);">
+                    <img src="https://flagcdn.com/${code}.svg" alt="${project.country} flag" style="width: 16px; height: 12px; border-radius: 2px; object-fit: cover;">
+                    ${project.country.toUpperCase()}
+                </div>
+            `;
+        }
+        
         html += `
-            <div class="project-card" style="cursor: pointer;" onclick="window.location.href='project-details.html?id=${project.id}'">
+            <div class="project-card" style="cursor: pointer; position: relative;" onclick="window.location.href='project-details.html?id=${project.id}'">
+                ${countryBadge}
                 <img src="${mainImage}" alt="${project.title}" style="object-fit: cover; width: 100%; aspect-ratio: 4/3;">
                 <div class="project-info">
                     <h3>${project.title}</h3>
