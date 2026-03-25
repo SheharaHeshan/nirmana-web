@@ -87,7 +87,7 @@ if (url.pathname.startsWith("/api/projects")) {
       
       // 1. Process Primary/Feature Image
       if (primaryFile && primaryFile.size > 0) {
-        const primaryKey = `projects/${projectId}/feature-${Date.now()}-${primaryFile.name}`;
+        const primaryKey = `projects/${projectId}/primary/${crypto.randomUUID()}-${primaryFile.name}`;
         await env.MY_BUCKET.put(primaryKey, primaryFile.stream(), { 
           httpMetadata: { contentType: primaryFile.type } 
         });
@@ -95,26 +95,38 @@ if (url.pathname.startsWith("/api/projects")) {
         
         await env.DB.prepare("UPDATE projects SET primary_image = ? WHERE id = ?")
           .bind(primaryUrl, projectId).run();
+      } else if (id && !formData.has("existing_primary")) {
+        // If editing and no new primary file, but existing_primary is not present, user removed it.
+        await env.DB.prepare("UPDATE projects SET primary_image = NULL WHERE id = ?")
+          .bind(projectId).run();
       }
 
       // 2. Process Gallery Images
+      let finalGalleryUrls = [];
+      const existingGalleryJson = formData.get("existing_gallery");
+      if (existingGalleryJson) {
+        try {
+          finalGalleryUrls = JSON.parse(existingGalleryJson);
+        } catch (e) {
+          console.error("Failed to parse existing_gallery:", e);
+        }
+      }
+
       if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
-        const imageUrls = [];
         for (const file of galleryFiles) {
           if (file.size === 0) continue;
-          const galleryKey = `projects/${projectId}/gallery-${Date.now()}-${file.name}`;
+          const galleryKey = `projects/${projectId}/gallery/${crypto.randomUUID()}-${file.name}`;
           await env.MY_BUCKET.put(galleryKey, file.stream(), { 
             httpMetadata: { contentType: file.type } 
           });
-          imageUrls.push(`${env.R2_PUBLIC_URL}/${galleryKey}`);
+          finalGalleryUrls.push(`${env.R2_PUBLIC_URL}/${galleryKey}`);
         }
+      }
 
-        if (imageUrls.length > 0) {
-          // If editing, you might want to append to existing images or replace them.
-          // This logic replaces them for simplicity.
-          await env.DB.prepare("UPDATE projects SET gallery_images = ? WHERE id = ?")
-            .bind(JSON.stringify(imageUrls), projectId).run();
-        }
+      // Only update gallery if there are new files OR if it's an edit and we have existing files data
+      if (id || galleryFiles.length > 0) {
+        await env.DB.prepare("UPDATE projects SET gallery_images = ? WHERE id = ?")
+          .bind(JSON.stringify(finalGalleryUrls), projectId).run();
       }
 
       return new Response(JSON.stringify({ success: true, id: projectId }), { 

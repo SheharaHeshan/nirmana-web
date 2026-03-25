@@ -58,14 +58,13 @@ async function saveProject(event) {
 
     // Provide existing images just in case the server handles them
     if (typeof currentFeatureImage !== 'undefined') {
-        let existing = [];
         if (currentFeatureImage && currentFeatureImage.startsWith('http')) {
-            existing.push(currentFeatureImage);
+            formData.append('existing_primary', currentFeatureImage);
         }
         if (typeof currentGalleryImages !== 'undefined' && currentGalleryImages.length > 0) {
-            existing = existing.concat(currentGalleryImages.filter(img => img.startsWith('http')));
+            const existingGalleries = currentGalleryImages.filter(img => img.startsWith('http'));
+            formData.append('existing_gallery', JSON.stringify(existingGalleries));
         }
-        formData.append('existing_images', JSON.stringify(existing));
     }
 
     try {
