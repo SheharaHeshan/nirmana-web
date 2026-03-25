@@ -16,6 +16,85 @@
         rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .vendors-marquee {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .vendors-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 40s linear infinite;
+            gap: 30px;
+        }
+
+        .vendors-track:hover {
+            animation-play-state: paused;
+        }
+
+        .vendor-scroller-card {
+            flex: 0 0 auto;
+            width: 320px;
+            /* Match original vendor-card style but for scroller */
+            background-color: var(--color-light);
+            padding: 40px 20px;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vendor-scroller-card:hover {
+            background-color: var(--color-dark);
+            color: var(--color-white);
+            transform: translateY(-5px);
+            border-color: var(--color-dark);
+        }
+
+        .vendor-scroller-card img {
+            height: 110px;
+            max-width: 90%;
+            object-fit: contain;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .vendor-scroller-card h3 {
+            font-size: 1.4rem;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-family: var(--font-heading);
+            font-weight: 700;
+        }
+
+        .vendor-scroller-card p {
+            font-size: 0.95rem;
+            color: #666;
+            margin-top: 5px;
+            transition: var(--transition);
+        }
+
+        .vendor-scroller-card:hover p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
 </head>
 
 <body>
@@ -80,7 +159,10 @@
             </div>
 
             <div class="project-grid" id="featured-projects">
-                <!-- Data will be loaded from CMS via data.js -->
+                <div class="loader"
+                    style="grid-column: 1/-1; display: flex; justify-content: center; padding: 3rem; color: var(--red);">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                </div>
             </div>
             <div style="text-align: center; margin-top: 50px;">
                 <a href="projects.html" class="btn btn-primary">See More Projects</a>
@@ -94,54 +176,64 @@
             <div class="section-header">
                 <h2 class="section-title text-white">OUR <span class="text-red">SERVICES</span></h2>
                 <div class="divider"></div>
-                <p class="section-desc text-gray">Premium surface solutions tailored to your modern and traditional architectural needs.</p>
+                <p class="section-desc text-gray">Premium surface solutions tailored to your modern and traditional
+                    architectural needs.</p>
             </div>
-            
+
             <div class="services-grid">
                 <div class="service-card">
                     <i class="fas fa-layer-group service-icon"></i>
                     <h3 class="service-title">Titanium Wall & Floor Finish</h3>
-                    <p class="service-desc">Durable and elegant titanium coating, providing a seamless finish for modern walls and floors.</p>
+                    <p class="service-desc">Durable and elegant titanium coating, providing a seamless finish for modern
+                        walls and floors.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-water service-icon"></i>
                     <h3 class="service-title">Fable Wash</h3>
-                    <p class="service-desc">Specialized wash techniques that bring out unique textures and premium finishes for exterior and interior surfaces.</p>
+                    <p class="service-desc">Specialized wash techniques that bring out unique textures and premium
+                        finishes for exterior and interior surfaces.</p>
                 </div>
                 <div class="service-card">
                     <i class="fab fa-modx service-icon"></i>
                     <h3 class="service-title">Titanium Clay Finish</h3>
-                    <p class="service-desc">A perfect blend of earthy clay texture embedded with robust titanium, creating a natural yet durable aesthetic.</p>
+                    <p class="service-desc">A perfect blend of earthy clay texture embedded with robust titanium,
+                        creating a natural yet durable aesthetic.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-wind service-icon"></i>
                     <h3 class="service-title">Sand Blaster Finish</h3>
-                    <p class="service-desc">High-quality sandblasting services to achieve perfectly textured, anti-slip profiles and exposed authentic aggregates.</p>
+                    <p class="service-desc">High-quality sandblasting services to achieve perfectly textured, anti-slip
+                        profiles and exposed authentic aggregates.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-cubes service-icon"></i>
                     <h3 class="service-title">Granular Finish</h3>
-                    <p class="service-desc">Textured stone and granular coatings that bring depth and a unique tactile experience to your architectural spaces.</p>
+                    <p class="service-desc">Textured stone and granular coatings that bring depth and a unique tactile
+                        experience to your architectural spaces.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-border-none service-icon"></i>
                     <h3 class="service-title">Micro Cement Dot Floor Finish</h3>
-                    <p class="service-desc">Innovative micro cement solutions featuring distinct dotted textures for bespoke, industrial-chic interiors.</p>
+                    <p class="service-desc">Innovative micro cement solutions featuring distinct dotted textures for
+                        bespoke, industrial-chic interiors.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-gem service-icon"></i>
                     <h3 class="service-title">Concrete Cut & Polish</h3>
-                    <p class="service-desc">Precision concrete cutting and expert polishing to produce high-gloss, ultra-durable surfaces.</p>
+                    <p class="service-desc">Precision concrete cutting and expert polishing to produce high-gloss,
+                        ultra-durable surfaces.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-paint-roller service-icon"></i>
                     <h3 class="service-title">House Painting</h3>
-                    <p class="service-desc">Professional residential painting services delivering flawless color and long-lasting protection.</p>
+                    <p class="service-desc">Professional residential painting services delivering flawless color and
+                        long-lasting protection.</p>
                 </div>
                 <div class="service-card">
                     <i class="fas fa-fill-drip service-icon"></i>
                     <h3 class="service-title">Water Base & PU</h3>
-                    <p class="service-desc">Eco-friendly water-based solutions and premium Polyurethane (PU) finishes for maximum surface protection.</p>
+                    <p class="service-desc">Eco-friendly water-based solutions and premium Polyurethane (PU) finishes
+                        for maximum surface protection.</p>
                 </div>
             </div>
         </div>
@@ -200,26 +292,10 @@
                 <p class="section-desc">We collaborate with the world's leading suppliers to ensure unparalleled
                     materials and technology.</p>
             </div>
-            <div class="vendors-grid">
-                <div class="vendor-card">
-                    <h3 class="vendor-name">TITANIUM MAX</h3>
-                    <p>Premium Coatings</p>
-                </div>
-                <div class="vendor-card">
-                    <h3 class="vendor-name">EPOXY PRO</h3>
-                    <p>Industrial Resins</p>
-                </div>
-                <div class="vendor-card">
-                    <h3 class="vendor-name">CONCRETEXT</h3>
-                    <p>Concrete Solutions</p>
-                </div>
-                <div class="vendor-card">
-                    <h3 class="vendor-name">POLISH MASTER</h3>
-                    <p>Finishing Tools</p>
-                </div>
-                <div class="vendor-card">
-                    <h3 class="vendor-name">ECOSEAL</h3>
-                    <p>Sustainable Sealants</p>
+            <div id="vendors-grid-container" style="min-height: 250px;">
+                <div class="loader"
+                    style="display: flex; justify-content: center; align-items: center; padding: 50px; color: var(--red);">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
                 </div>
             </div>
         </div>
@@ -250,30 +326,30 @@
                     </li>
                 </ul>
             </div>
-                <div class="contact-form-wrapper">
-                    <form class="contact-form" id="contactForm">
-                        <div class="form-group">
-                            <input type="text" name="fullName" placeholder="Full Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" placeholder="Email Address" required>
-                        </div>
-                        <div class="form-group">
-                            <select name="floorType" required>
-                                <option value="" disabled selected>Select Floor Type</option>
-                                <option value="titanium">Titanium Finish</option>
-                                <option value="epoxy">Epoxy Coating</option>
-                                <option value="polished-concrete">Polished Concrete</option>
-                                <option value="other">Other Surfaces</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <textarea name="projectDetails" placeholder="Tell us about your project..." rows="4"
-                                required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Send Message</button>
-                    </form>
-                </div>
+            <div class="contact-form-wrapper">
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" name="fullName" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <select name="floorType" required>
+                            <option value="" disabled selected>Select Floor Type</option>
+                            <option value="titanium">Titanium Finish</option>
+                            <option value="epoxy">Epoxy Coating</option>
+                            <option value="polished-concrete">Polished Concrete</option>
+                            <option value="other">Other Surfaces</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="projectDetails" placeholder="Tell us about your project..." rows="4"
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+                </form>
+            </div>
         </div>
     </section>
 
@@ -282,7 +358,8 @@
         <div class="container footer-content">
             <div class="footer-brand">
                 <a href="#home" class="logo">
-                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Constructions" class="site-logo">
+                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Constructions"
+                        class="site-logo">
                 </a>
                 <p>Building tomorrow's surfaces today.</p>
                 <div class="social-links">

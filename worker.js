@@ -12,9 +12,14 @@ export default {
 
     const baseUrl = env.R2_PUBLIC_URL || url.origin;
 
+    const sanitizeFilename = (name) => {
+      // Replace spaces and specific special chars with underscores
+      return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    };
+
     try {
       if (method === "GET" && (url.pathname.startsWith("/projects/") || url.pathname.startsWith("/vendors/"))) {
-        const objectPath = url.pathname.substring(1); // remove leading slash
+        const objectPath = decodeURIComponent(url.pathname.substring(1)); 
         const object = await env.MY_BUCKET.get(objectPath);
         if (object === null) {
           return new Response("Not Found", { status: 404, headers: corsHeaders });
@@ -101,8 +106,8 @@ if (url.pathname.startsWith("/api/projects")) {
       
       // 1. Process Primary/Feature Image
       if (primaryFile && primaryFile.size > 0) {
-        const primaryKey = `projects/${projectId}/primary/${crypto.randomUUID()}-${primaryFile.name}`;
-        await env.MY_BUCKET.put(primaryKey, primaryFile.stream(), { 
+        const primaryKey = `projects/${projectId}/primary/${crypto.randomUUID()}-${sanitizeFilename(primaryFile.name)}`;
+        await env.MY_BUCKET.put(primaryKey, primaryFile.stream(), {
           httpMetadata: { contentType: primaryFile.type } 
         });
         const primaryUrl = `${baseUrl}/${primaryKey}`;
@@ -129,7 +134,7 @@ if (url.pathname.startsWith("/api/projects")) {
       if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
         for (const file of galleryFiles) {
           if (file.size === 0) continue;
-          const galleryKey = `projects/${projectId}/gallery/${crypto.randomUUID()}-${file.name}`;
+          const galleryKey = `projects/${projectId}/gallery/${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
           await env.MY_BUCKET.put(galleryKey, file.stream(), { 
             httpMetadata: { contentType: file.type } 
           });
@@ -205,7 +210,10 @@ if (url.pathname.startsWith("/api/projects")) {
           const logoFile = formData.get("logo");
 
           let vId = id;
+          let oldLogoUrl = null;
           if (id) {
+            const existing = await env.DB.prepare("SELECT logo_url FROM vendors WHERE id=?").bind(id).first();
+            oldLogoUrl = existing?.logo_url;
             await env.DB.prepare("UPDATE vendors SET name=?, material=? WHERE id=?").bind(name, material, id).run();
           } else {
             const { results } = await env.DB.prepare("INSERT INTO vendors (name, material) VALUES (?, ?) RETURNING id").bind(name, material).run();
@@ -213,10 +221,22 @@ if (url.pathname.startsWith("/api/projects")) {
           }
 
           if (logoFile && logoFile.size > 0) {
-            const fileName = `vendors/${vId}/${logoFile.name}`;
+            if (oldLogoUrl) {
+                let key = oldLogoUrl;
+                if (key.includes("vendors/")) key = key.substring(key.indexOf("vendors/"));
+                await env.MY_BUCKET.delete(key);
+            }
+            const fileName = `vendors/${vId}/${crypto.randomUUID()}-${sanitizeFilename(logoFile.name)}`;
             await env.MY_BUCKET.put(fileName, logoFile.stream(), { httpMetadata: { contentType: logoFile.type } });
             const logoUrl = `${baseUrl}/${fileName}`;
             await env.DB.prepare("UPDATE vendors SET logo_url = ? WHERE id = ?").bind(logoUrl, vId).run();
+          } else if (id && formData.get("remove_logo") === "true") {
+            if (oldLogoUrl) {
+                let key = oldLogoUrl;
+                if (key.includes("vendors/")) key = key.substring(key.indexOf("vendors/"));
+                await env.MY_BUCKET.delete(key);
+            }
+            await env.DB.prepare("UPDATE vendors SET logo_url = NULL WHERE id = ?").bind(vId).run();
           }
           return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }

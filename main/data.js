@@ -140,25 +140,32 @@ async function renderContactSettings() {
 
 async function renderVendorsSection() {
     const data = await getAllData();
-    if (!data || !data.vendors) return;
+    if (!data || !data.vendors || data.vendors.length === 0) return;
 
-    const vendorsGrid = document.querySelector('.vendors-grid');
-    if (vendorsGrid && data.vendors.length > 0) {
-        let html = '';
-        data.vendors.forEach(vendor => {
-            let logoHtml = vendor.logo_url 
-                ? `<img src="${vendor.logo_url}" alt="${vendor.name}" style="height: 40px; margin-bottom: 10px; border-radius: 4px;">` 
-                : `<div style="height: 40px; margin-bottom: 10px;"></div>`;
-
-            html += `
-                <div class="vendor-card" style="text-align: center;">
-                    ${logoHtml}
-                    <h3 class="vendor-name">${vendor.name}</h3>
+    const container = document.getElementById('vendors-grid-container');
+    if (container) {
+        const slides = data.vendors.map(vendor => {
+            const logo = vendor.logo_url 
+                ? `<img src="${vendor.logo_url}" alt="${vendor.name}">` 
+                : `<div style="height: 80px; display: flex; align-items: center;"><i class="fas fa-truck fa-3x"></i></div>`;
+            
+            return `
+                <div class="vendor-scroller-card">
+                    ${logo}
+                    <h3>${vendor.name}</h3>
                     <p>${vendor.material}</p>
                 </div>
             `;
-        });
-        vendorsGrid.innerHTML = html;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="vendors-marquee">
+                <div class="vendors-track">
+                    ${slides}
+                    ${slides}
+                </div>
+            </div>
+        `;
     }
 }
 

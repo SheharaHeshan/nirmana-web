@@ -432,17 +432,18 @@
                         <h2 class="section-label"><i class="fas fa-truck"></i> Vendors</h2>
                         <div class="card">
                             <div class="card-header">
-                                <h2 class="card-title">Add Vendor</h2>
+                                <h2 class="card-title" id="vendor-form-title">Add Vendor</h2>
                             </div>
-                            <form onsubmit="event.preventDefault(); alert('Vendor added');">
+                            <form onsubmit="saveVendor(event)">
+                                <input type="hidden" id="vendor-id" name="id">
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Vendor Name</label>
-                                        <input type="text" class="form-control">
+                                        <input type="text" class="form-control" id="vendor-name" name="name" required>
                                     </div>
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Service / Material</label>
-                                        <input type="text" class="form-control">
+                                        <input type="text" class="form-control" id="vendor-material" name="material" required>
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
@@ -451,9 +452,15 @@
                                 </div>
                                 <div class="input-group" id="vendor-logo-group" style="display: none;">
                                     <label>Vendor Logo</label>
-                                    <input type="file" class="form-control" style="padding: 0.4rem;" accept="image/*">
+                                    <input type="file" class="form-control" id="vendor-logo" name="logo" style="padding: 0.4rem;" accept="image/*" onchange="previewVendorLogo(event)">
+                                    <div style="margin-top: 10px; display: none;" id="vendor-logo-preview-container">
+                                        <img id="vendor-logo-preview" src="" style="max-height: 120px; border-radius: 8px; border: 1px solid #ddd; padding: 5px; background: #f9f9f9; width: auto; display: block;">
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Vendor</button>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" id="vendor-submit-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Vendor</button>
+                                    <button type="button" id="vendor-cancel-btn" class="btn btn-outline" style="display: none;" onclick="cancelVendorEdit()">Cancel</button>
+                                </div>
                             </form>
                         </div>
                         <div class="card">
@@ -467,15 +474,8 @@
                                             <th style="text-align: right;">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><div style="width: 40px; height: 40px; background: #E2E8F0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.75rem;">N/A</div></td>
-                                            <td>Holcim</td>
-                                            <td>Cement</td>
-                                            <td style="text-align: right;">
-                                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                                            </td>
-                                        </tr>
+                                    <tbody id="vendor-list">
+                                        <!-- Vendors will be loaded here -->
                                     </tbody>
                                 </table>
                             </div>
@@ -545,6 +545,40 @@
     <script>
         let currentFeatureImage = null;
         let currentGalleryImages = [];
+
+        function previewVendorLogo(event) {
+            const file = event.target.files[0];
+            const previewContainer = document.getElementById('vendor-logo-preview-container');
+            const previewImg = document.getElementById('vendor-logo-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
+                previewImg.src = "";
+            }
+        }
+
+        function cancelVendorEdit() {
+            document.getElementById('vendor-id').value = '';
+            document.getElementById('vendor-name').value = '';
+            document.getElementById('vendor-material').value = '';
+            document.getElementById('vendor-logo').value = '';
+            
+            document.getElementById('vendor-has-logo').checked = false;
+            document.getElementById('vendor-logo-group').style.display = 'none';
+            document.getElementById('vendor-logo-preview-container').style.display = 'none';
+            document.getElementById('vendor-logo-preview').src = '';
+            
+            document.getElementById('vendor-form-title').textContent = 'Add Vendor';
+            const submitBtn = document.getElementById('vendor-submit-btn');
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Vendor';
+            document.getElementById('vendor-cancel-btn').style.display = 'none';
+        }
 
         // Sidebar Navigation specific to PC Dashboard
         const navItems = document.querySelectorAll('.nav-item');

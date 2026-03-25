@@ -149,14 +149,79 @@ async function saveVendor(event) {
     const form = event.target;
     const formData = new FormData(form);
     const id = document.getElementById('vendor-id').value;
-    if (id) formData.append('id', id);
+    const hasLogo = document.getElementById('vendor-has-logo').checked;
+    if (id) {
+        formData.append('id', id);
+        if (!hasLogo) {
+            formData.append('remove_logo', 'true');
+        }
+    }
 
     await fetch(`${BASE_URL}/vendors`, {
         method: 'POST',
         body: formData
     });
-    form.reset();
+    showNotification("Vendor saved successfully!", 'success');
+    if (typeof cancelVendorEdit === 'function') {
+        cancelVendorEdit();
+    } else {
+        form.reset();
+        document.getElementById('vendor-id').value = '';
+        document.getElementById('vendor-logo-group').style.display = 'none';
+        const logoCheckbox = document.getElementById('vendor-has-logo');
+        if (logoCheckbox) logoCheckbox.checked = false;
+    }
     refreshAdminDashboard();
+}
+
+async function deleteVendor(id) {
+    if (!confirm("Are you sure you want to delete this vendor?")) return;
+    try {
+        await fetch(`${BASE_URL}/vendors?id=${id}`, { method: 'DELETE' });
+        showNotification("Vendor deleted successfully!", 'success');
+        refreshAdminDashboard();
+    } catch (err) {
+        showNotification("Error deleting vendor: " + err.message, 'error');
+    }
+}
+
+function editVendor(vId) {
+    const v = window.adminDataCache.vendors.find(x => x.id === vId);
+    if (!v) return;
+    
+    document.getElementById('vendor-id').value = v.id;
+    document.getElementById('vendor-name').value = v.name;
+    document.getElementById('vendor-material').value = v.material;
+    
+    document.getElementById('vendor-form-title').textContent = 'Edit Vendor';
+    const submitBtn = document.getElementById('vendor-submit-btn');
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Vendor';
+    const cancelBtn = document.getElementById('vendor-cancel-btn');
+    if (cancelBtn) cancelBtn.style.display = 'inline-block';
+    
+    const logoCheckbox = document.getElementById('vendor-has-logo');
+    const logoGroup = document.getElementById('vendor-logo-group');
+    const previewContainer = document.getElementById('vendor-logo-preview-container');
+    const previewImg = document.getElementById('vendor-logo-preview');
+    
+    if (logoCheckbox && logoGroup) {
+        if (v.logo_url) {
+            logoCheckbox.checked = true;
+            logoGroup.style.display = 'block';
+            if (previewContainer && previewImg) {
+                previewContainer.style.display = 'block';
+                previewImg.src = v.logo_url;
+            }
+        } else {
+            logoCheckbox.checked = false;
+            logoGroup.style.display = 'none';
+            if (previewContainer && previewImg) {
+                previewContainer.style.display = 'none';
+                previewImg.src = '';
+            }
+        }
+    }
+    document.getElementById('vendors-section').scrollIntoView({ behavior: 'smooth' });
 }
 
 // --- ABOUT & CONTACT ACTIONS ---
@@ -173,7 +238,7 @@ async function updateAbout(event) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    alert("About info updated!");
+    showNotification("About info updated!", 'success');
 }
 
 async function updateContact(event) {
@@ -188,7 +253,7 @@ async function updateContact(event) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    alert("Contact info updated!");
+    showNotification("Contact info updated!", 'success');
 }
 
 // --- RENDERING LOGIC (UI UPDATES) ---
@@ -273,16 +338,22 @@ function renderFinishes(finishes) {
 function renderVendors(vendors) {
     const tbody = document.getElementById('vendor-list');
     if (!tbody) return;
-    tbody.innerHTML = vendors.map(v => `
-        <tr>
-            <td><img src="${v.logo_url}" style="width:30px;"></td>
-            <td>${v.name}</td>
-            <td>${v.material}</td>
-            <td style="text-align: right;">
-                <button class="btn btn-danger btn-sm" onclick="deleteVendor(${v.id})"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = vendors.map(v => {
+        let logoContent = v.logo_url 
+            ? `<img src="${v.logo_url}" style="height: 60px; max-width: 100px; border-radius: 4px; object-fit: contain; background: #f9f9f9; padding: 5px; border: 1px solid #eee;">`
+            : `<div style="width: 50px; height: 50px; background: #E2E8F0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.65rem; font-weight: 500;">N/A</div>`;
+        return `
+            <tr>
+                <td>${logoContent}</td>
+                <td>${v.name}</td>
+                <td>${v.material}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-outline btn-sm" onclick="editVendor(${v.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteVendor(${v.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function populateForms(about, contact) {
