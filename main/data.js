@@ -231,7 +231,10 @@ async function initInquiryForm() {
                 message: formData.get('projectDetails')
             };
 
-            formData.append('floorType', formData.get('service'));
+            // Ensure Email Worker gets consistent field names
+            formData.append('name', payload.name);
+            formData.append('message', payload.message);
+            formData.append('floorType', payload.service);
 
             try {
                 // Run both requests in parallel for speed
