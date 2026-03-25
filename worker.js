@@ -10,7 +10,21 @@ export default {
 
     if (method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+    const baseUrl = env.R2_PUBLIC_URL || url.origin;
+
     try {
+      if (method === "GET" && (url.pathname.startsWith("/projects/") || url.pathname.startsWith("/vendors/"))) {
+        const objectPath = url.pathname.substring(1); // remove leading slash
+        const object = await env.MY_BUCKET.get(objectPath);
+        if (object === null) {
+          return new Response("Not Found", { status: 404, headers: corsHeaders });
+        }
+        const headers = new Headers(corsHeaders);
+        object.writeHttpMetadata(headers);
+        headers.set("etag", object.httpEtag);
+        return new Response(object.body, { headers });
+      }
+
       // ---------------------------------------------------------
       // 1. SECTORS & FINISHES (CRUD)
       // ---------------------------------------------------------
@@ -91,7 +105,7 @@ if (url.pathname.startsWith("/api/projects")) {
         await env.MY_BUCKET.put(primaryKey, primaryFile.stream(), { 
           httpMetadata: { contentType: primaryFile.type } 
         });
-        const primaryUrl = `${env.R2_PUBLIC_URL}/${primaryKey}`;
+        const primaryUrl = `${baseUrl}/${primaryKey}`;
         
         await env.DB.prepare("UPDATE projects SET primary_image = ? WHERE id = ?")
           .bind(primaryUrl, projectId).run();
@@ -119,7 +133,7 @@ if (url.pathname.startsWith("/api/projects")) {
           await env.MY_BUCKET.put(galleryKey, file.stream(), { 
             httpMetadata: { contentType: file.type } 
           });
-          finalGalleryUrls.push(`${env.R2_PUBLIC_URL}/${galleryKey}`);
+          finalGalleryUrls.push(`${baseUrl}/${galleryKey}`);
         }
       }
 
@@ -154,7 +168,8 @@ if (url.pathname.startsWith("/api/projects")) {
     if (project) {
       // Delete Feature Image from R2
       if (project.primary_image) {
-        const featKey = project.primary_image.split(`${env.R2_PUBLIC_URL}/`)[1];
+        let featKey = project.primary_image;
+        if (featKey.includes("projects/")) featKey = featKey.substring(featKey.indexOf("projects/"));
         if (featKey) await env.MY_BUCKET.delete(featKey);
       }
 
@@ -163,7 +178,8 @@ if (url.pathname.startsWith("/api/projects")) {
         try {
           const images = JSON.parse(project.gallery_images);
           for (const imgUrl of images) {
-            const galKey = imgUrl.split(`${env.R2_PUBLIC_URL}/`)[1];
+            let galKey = imgUrl;
+            if (galKey.includes("projects/")) galKey = galKey.substring(galKey.indexOf("projects/"));
             if (galKey) await env.MY_BUCKET.delete(galKey);
           }
         } catch (e) { console.error("JSON parse error on delete", e); }
@@ -199,7 +215,7 @@ if (url.pathname.startsWith("/api/projects")) {
           if (logoFile && logoFile.size > 0) {
             const fileName = `vendors/${vId}/${logoFile.name}`;
             await env.MY_BUCKET.put(fileName, logoFile.stream(), { httpMetadata: { contentType: logoFile.type } });
-            const logoUrl = `${env.R2_PUBLIC_URL}/${fileName}`;
+            const logoUrl = `${baseUrl}/${fileName}`;
             await env.DB.prepare("UPDATE vendors SET logo_url = ? WHERE id = ?").bind(logoUrl, vId).run();
           }
           return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
@@ -209,7 +225,8 @@ if (url.pathname.startsWith("/api/projects")) {
           const id = url.searchParams.get("id");
           const vendor = await env.DB.prepare("SELECT logo_url FROM vendors WHERE id = ?").bind(id).first();
           if (vendor?.logo_url) {
-            const key = vendor.logo_url.split(`${env.R2_PUBLIC_URL}/`)[1];
+            let key = vendor.logo_url;
+            if (key.includes("vendors/")) key = key.substring(key.indexOf("vendors/"));
             await env.MY_BUCKET.delete(key);
           }
           await env.DB.prepare("DELETE FROM vendors WHERE id = ?").bind(id).run();
