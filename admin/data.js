@@ -1,164 +1,345 @@
-const DEFAULT_PROJECTS = [
-    { id: 1, title: "Ocean View Villa", type: "Residential", finish: "Titanium Finish", country: "Sri Lanka", desc: "Premium titanium floor finish providing a sleek and durable surface.", images: ["img/img1.jpeg", "img/img2.jpeg", "img/img3.jpeg"] },
-    { id: 2, title: "Galle Fort Boutique", type: "Commercial", finish: "Polished Concrete", country: "Sri Lanka", desc: "Industrial-chic polished concrete suitable for high foot traffic.", images: ["img/img2.jpeg", "img/img1.jpeg", "img/img6.jpeg"] },
-    { id: 3, title: "Sunset Apartment Complex", type: "Residential", finish: "Epoxy Coating", country: "Australia", desc: "Long-lasting and seamless epoxy coating for modern residential spaces.", images: ["img/img3.jpeg", "img/img4.jpeg", "img/img5.jpeg"] },
-    { id: 4, title: "Southern Heights", type: "Corporate", finish: "Seamless Terrazzo", country: "UAE", desc: "Luxurious seamless terrazzo, providing a robust corporate environment.", images: ["img/img4.jpeg", "img/img6.jpeg", "img/img7.jpeg"] },
-];
+/* Modified data.js - Linked to Cloudflare Worker & D1/R2 */
 
+const BASE_URL = 'https://admin-handler.sheshan.workers.dev/api';
 
-function getProjects() {
-    let stored = localStorage.getItem('nirmana_projects');
-    if (!stored) {
-        localStorage.setItem('nirmana_projects', JSON.stringify(DEFAULT_PROJECTS));
-        return DEFAULT_PROJECTS;
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    refreshAdminDashboard();
+});
+
+window.adminDataCache = null;
+
+// Helper to refresh all tables and dropdowns
+async function refreshAdminDashboard() {
+    const data = await getAllData();
+    if (data) {
+        window.adminDataCache = data;
+        renderProjects(data.projects, data.sectors, data.finishes);
+        renderSectors(data.sectors);
+        renderFinishes(data.finishes);
+        renderVendors(data.vendors);
+        populateForms(data.about, data.contact);
     }
-    return JSON.parse(stored);
 }
 
-function saveProjects(projects) {
-    localStorage.setItem('nirmana_projects', JSON.stringify(projects));
+// --- API CORE FETCHERS ---
+
+async function getAllData() {
+    try {
+        const response = await fetch(`${BASE_URL}/all`);
+        return await response.json();
+    } catch (err) {
+        console.error("Failed to fetch data:", err);
+    }
 }
 
-function getProjectById(id) {
-    const projects = getProjects();
-    return projects.find(p => p.id === parseInt(id));
+// --- PROJECT ACTIONS (D1 + R2) ---
+
+async function saveProject(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // If edit mode, the hidden input 'id' will be automatically picked up by FormData because of name="id" in index.html.
+    const id = document.getElementById('project-id').value;
+
+    // Example of separating them
+    const featureFileInput = document.getElementById('feature-image-file');
+    if (featureFileInput && featureFileInput.files[0]) {
+        formData.append('primary_image', featureFileInput.files[0]);
+    }
+
+    const galleryFileInput = document.getElementById('gallery-images-file');
+    if (galleryFileInput && galleryFileInput.files.length > 0) {
+        for (let i = 0; i < galleryFileInput.files.length; i++) {
+            formData.append('gallery_images', galleryFileInput.files[i]);
+        }
+    }
+
+    // Provide existing images just in case the server handles them
+    if (typeof currentFeatureImage !== 'undefined') {
+        let existing = [];
+        if (currentFeatureImage && currentFeatureImage.startsWith('http')) {
+            existing.push(currentFeatureImage);
+        }
+        if (typeof currentGalleryImages !== 'undefined' && currentGalleryImages.length > 0) {
+            existing = existing.concat(currentGalleryImages.filter(img => img.startsWith('http')));
+        }
+        formData.append('existing_images', JSON.stringify(existing));
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/projects`, {
+            method: 'POST',
+            body: formData // Sends files to R2 and text to D1
+        });
+        if (response.ok) {
+            if (typeof resetForm === 'function') resetForm();
+            refreshAdminDashboard();
+            showNotification("Project saved successfully!", 'success');
+        } else {
+            let errText = "Unknown error";
+            try { errText = await response.text(); } catch (e) {}
+            showNotification(`Status: ${response.status}<br><br>Details:<br>${errText}`, 'error');
+        }
+    } catch (err) {
+        showNotification("Exception details:<br>" + err.message, 'error');
+    }
 }
 
-function renderProjectsGrid(containerId, limit = null) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const projects = getProjects();
-    const displayProjects = limit ? projects.slice(0, limit) : projects;
-
-    let html = '';
-    displayProjects.forEach(project => {
-        let mainImage = project.images && project.images.length > 0 ? project.images[0] : 'img/img1.jpeg';
-        html += `
-            <div class="project-card" style="cursor: pointer;" onclick="window.location.href='project-details.html?id=${project.id}'">
-                <img src="${mainImage}" alt="${project.title}">
-                <div class="project-info">
-                    <h3>${project.title}</h3>
-                    <p>${project.type} • ${project.finish}</p>
-                    <a href="project-details.html?id=${project.id}" class="view-project" onclick="event.stopPropagation();"><i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
+async function deleteProject(id) {
+    if (!confirm("Are you sure? This will also delete images from R2.")) return;
+    await fetch(`${BASE_URL}/projects?id=${id}`, { method: 'DELETE' });
+    refreshAdminDashboard();
 }
 
-// Updated data.js functions
-const API_URL = "https://admin-handler.sheshan.workers.dev/api";
+// --- SECTOR & FINISH ACTIONS ---
 
-// --- SECTOR FUNCTIONS ---
-
-async function getSectors() {
-    const res = await fetch(`${API_URL}/sectors`);
-    return await res.json();
-}
-
-async function saveSector() {
-    const idVal = document.getElementById('sector-id').value;
+async function saveSector(event) {
+    event.preventDefault();
+    const id = document.getElementById('sector-id').value;
     const name = document.getElementById('sector-name').value;
 
-    const method = idVal ? 'PUT' : 'POST';
-    const payload = idVal ? { id: parseInt(idVal), name } : { name };
-
-    await fetch(`${API_URL}/sectors`, {
-        method: method,
+    await fetch(`${BASE_URL}/sectors`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ id, name })
     });
+    if (typeof resetSectorForm === 'function') resetSectorForm();
+    refreshAdminDashboard();
+}
 
-    resetSectorForm();
-    renderSectors(); // Re-render table
+async function saveFinish(event) {
+    event.preventDefault();
+    const id = document.getElementById('finish-id').value;
+    const name = document.getElementById('finish-name').value;
+
+    await fetch(`${BASE_URL}/finishes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name })
+    });
+    if (typeof resetFinishForm === 'function') resetFinishForm();
+    refreshAdminDashboard();
 }
 
 async function deleteSector(id) {
-    if (confirm("Delete this sector?")) {
-        await fetch(`${API_URL}/sectors?id=${id}`, { method: 'DELETE' });
-        renderSectors();
+    if (!confirm("Are you sure you want to delete this sector?")) return;
+    try {
+        await fetch(`${BASE_URL}/sectors?id=${id}`, { method: 'DELETE' });
+        refreshAdminDashboard();
+    } catch (err) {
+        alert("Error deleting sector.");
     }
-}
-
-// --- FINISH FUNCTIONS ---
-
-async function getFinishes() {
-    const res = await fetch(`${API_URL}/finishes`);
-    return await res.json();
-}
-
-async function saveFinish() {
-    const idVal = document.getElementById('finish-id').value;
-    const name = document.getElementById('finish-name').value;
-
-    const method = idVal ? 'PUT' : 'POST';
-    const payload = idVal ? { id: parseInt(idVal), name } : { name };
-
-    await fetch(`${API_URL}/finishes`, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    resetFinishForm();
-    renderFinishes();
 }
 
 async function deleteFinish(id) {
-    if (confirm("Delete this finish type?")) {
-        await fetch(`${API_URL}/finishes?id=${id}`, { method: 'DELETE' });
-        renderFinishes();
+    if (!confirm("Are you sure you want to delete this finish?")) return;
+    try {
+        await fetch(`${BASE_URL}/finishes?id=${id}`, { method: 'DELETE' });
+        refreshAdminDashboard();
+    } catch (err) {
+        alert("Error deleting finish.");
     }
 }
 
-// --- UPDATED RENDER FUNCTIONS (Must be async) ---
+// --- VENDOR ACTIONS ---
 
-async function renderSectors() {
-    const sectors = await getSectors();
-    const tbody = document.getElementById('sector-list');
-    const selectEl = document.getElementById('type');
+async function saveVendor(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const id = document.getElementById('vendor-id').value;
+    if (id) formData.append('id', id);
 
-    let tHtml = '';
-    let sHtml = '<option value="">Select a sector type</option>';
-
-    sectors.forEach(s => {
-        tHtml += `
-            <tr>
-                <td>${s.name}</td>
-                <td style="text-align: right;">
-                    <button class="btn btn-outline btn-sm" onclick="editSector(${s.id}, '${s.name}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteSector(${s.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
-        sHtml += `<option value="${s.name}">${s.name}</option>`;
+    await fetch(`${BASE_URL}/vendors`, {
+        method: 'POST',
+        body: formData
     });
-
-    if (tbody) tbody.innerHTML = tHtml || '<tr><td colspan="2">No sectors.</td></tr>';
-    if (selectEl) selectEl.innerHTML = sHtml;
+    form.reset();
+    refreshAdminDashboard();
 }
 
-async function renderFinishes() {
-    const finishes = await getFinishes();
-    const tbody = document.getElementById('finish-list');
-    const selectEl = document.getElementById('finish');
+// --- ABOUT & CONTACT ACTIONS ---
 
-    let tHtml = '';
-    let fHtml = '<option value="">Select a finish type</option>';
-
-    finishes.forEach(f => {
-        tHtml += `
-            <tr>
-                <td>${f.name}</td>
-                <td style="text-align: right;">
-                    <button class="btn btn-outline btn-sm" onclick="editFinish(${f.id}, '${f.name}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteFinish(${f.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
-        fHtml += `<option value="${f.name}">${f.name}</option>`;
+async function updateAbout(event) {
+    event.preventDefault();
+    const data = {
+        story: document.getElementById('about-story').value,
+        years_experience: document.getElementById('years-exp').value,
+        completed_projects: document.getElementById('projects-count').value
+    };
+    await fetch(`${BASE_URL}/about`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
     });
+    alert("About info updated!");
+}
 
-    if (tbody) tbody.innerHTML = tHtml || '<tr><td colspan="2">No finishes.</td></tr>';
-    if (selectEl) selectEl.innerHTML = fHtml;
+async function updateContact(event) {
+    event.preventDefault();
+    const data = {
+        email: document.getElementById('contact-email').value,
+        phone: document.getElementById('contact-phone').value,
+        address: document.getElementById('contact-address').value
+    };
+    await fetch(`${BASE_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    alert("Contact info updated!");
+}
+
+// --- RENDERING LOGIC (UI UPDATES) ---
+
+function renderProjects(projects, sectors, finishes) {
+    const tbody = document.getElementById('admin-project-list');
+    if (!tbody) return;
+    tbody.innerHTML = projects.map(p => {
+        const sector = sectors.find(s => s.id === p.sector_id)?.name || 'N/A';
+        const finish = finishes.find(f => f.id === p.finish_id)?.name || 'N/A';
+        let thumb = "https://placehold.co/50x50?text=Img";
+        if (p.primary_image) {
+            thumb = p.primary_image;
+        } else {
+            try {
+                const arr = JSON.parse(p.gallery_images || "[]");
+                if (arr && arr.length > 0) thumb = arr[0];
+            } catch (e) {}
+        }
+
+        return `
+            <tr>
+                <td><img src="${thumb}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;" onerror="this.src='https://placehold.co/50x50?text=No+Img'"></td>
+                <td><strong>${p.title}</strong></td>
+                <td>${p.country || 'N/A'}</td>
+                <td>${sector}</td>
+                <td>${finish}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-outline btn-sm" onclick="editProject(${p.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    // Also update the Sector and Finish Dropdowns in the Project Form
+    const sectorSelect = document.getElementById('type');
+    const finishSelect = document.getElementById('finish');
+    
+    if (sectorSelect) {
+        sectorSelect.innerHTML = '<option value="">Select Sector</option>' + 
+            sectors.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        sectorSelect.setAttribute('name', 'sector_id');
+    }
+    
+    if (finishSelect) {
+        finishSelect.innerHTML = '<option value="">Select Finish</option>' + 
+            finishes.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+        finishSelect.setAttribute('name', 'finish_id');
+    }
+}
+
+function renderSectors(sectors) {
+    const tbody = document.getElementById('sector-list');
+    if (!tbody) return;
+    tbody.innerHTML = sectors.map(s => `
+        <tr>
+            <td>${s.name}</td>
+            <td style="text-align: right;">
+                <button class="btn btn-outline btn-sm" onclick="editSector(${s.id}, '${s.name}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSector(${s.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderFinishes(finishes) {
+    const tbody = document.getElementById('finish-list');
+    if (!tbody) return;
+    tbody.innerHTML = finishes.map(f => `
+        <tr>
+            <td>${f.name}</td>
+            <td style="text-align: right;">
+                <button class="btn btn-outline btn-sm" onclick="editFinish(${f.id}, '${f.name}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteFinish(${f.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+
+function renderVendors(vendors) {
+    const tbody = document.getElementById('vendor-list');
+    if (!tbody) return;
+    tbody.innerHTML = vendors.map(v => `
+        <tr>
+            <td><img src="${v.logo_url}" style="width:30px;"></td>
+            <td>${v.name}</td>
+            <td>${v.material}</td>
+            <td style="text-align: right;">
+                <button class="btn btn-danger btn-sm" onclick="deleteVendor(${v.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function populateForms(about, contact) {
+    if (about) {
+        document.getElementById('about-story').value = about.story;
+        document.getElementById('years-exp').value = about.years_experience;
+        document.getElementById('projects-count').value = about.completed_projects;
+    }
+    if (contact) {
+        document.getElementById('contact-email').value = contact.email;
+        document.getElementById('contact-phone').value = contact.phone;
+        document.getElementById('contact-address').value = contact.address;
+    }
+}
+
+// --- GLOBAL NOTIFICATION ---
+function showNotification(message, type = 'success') {
+    let overlay = document.getElementById('global-notification-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'global-notification-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.right = '0';
+        overlay.style.bottom = '0';
+        overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.4)';
+        overlay.style.backdropFilter = 'blur(2px)';
+        overlay.style.zIndex = '9999';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.animation = 'fadeIn 0.2s ease';
+        document.body.appendChild(overlay);
+
+        const card = document.createElement('div');
+        card.id = 'global-notification-card';
+        card.style.backgroundColor = '#fff';
+        card.style.borderRadius = '0.75rem';
+        card.style.padding = '2rem';
+        card.style.maxWidth = '400px';
+        card.style.width = '90%';
+        card.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
+        card.style.textAlign = 'center';
+        card.style.position = 'relative';
+        overlay.appendChild(card);
+    }
+    
+    const card = document.getElementById('global-notification-card');
+    const color = type === 'error' ? '#EF4444' : '#10B981';
+    const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+    
+    card.innerHTML = `
+        <i class="fas ${icon}" style="font-size: 3rem; color: ${color}; margin-bottom: 1rem;"></i>
+        <h3 style="font-size: 1.25rem; font-weight: 600; color: #0F172A; margin-bottom: 0.5rem;">${type === 'error' ? 'Error' : 'Success'}</h3>
+        <div style="color: #64748B; font-size: 0.875rem; margin-bottom: 1.5rem; word-break: break-word; max-height: 200px; overflow-y: auto; text-align: left; background: #F8FAFC; padding: 10px; border-radius: 6px; border: 1px solid #E2E8F0;">${message}</div>
+        <button onclick="document.getElementById('global-notification-overlay').remove()" style="background-color: ${color}; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: opacity 0.2s; width: 100%;">Close</button>
+    `;
 }

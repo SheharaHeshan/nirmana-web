@@ -334,24 +334,24 @@
                                 <p>Fill in the details to add a new project below.</p>
                             </div>
                             <form id="project-form">
-                                <input type="hidden" id="project-id">
+                                <input type="hidden" id="project-id" name="id">
                                 <div class="input-group">
                                     <label>Project Title</label>
-                                    <input type="text" class="form-control" id="title" required>
+                                    <input type="text" class="form-control" id="title" name="title" required>
                                 </div>
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Sector Type</label>
-                                        <select class="form-control" id="type" required></select>
+                                        <select class="form-control" id="type" name="sector_id" required></select>
                                     </div>
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Finish Type</label>
-                                        <select class="form-control" id="finish" required></select>
+                                        <select class="form-control" id="finish" name="finish_id" required></select>
                                     </div>
                                 </div>
                                 <div class="input-group">
                                     <label>Country</label>
-                                    <select class="form-control" id="country" required>
+                                    <select class="form-control" id="country" name="country" required>
                                         <option value="">Select a country</option>
                                         <option value="Sri Lanka">Sri Lanka</option>
                                         <option value="USA">USA</option>
@@ -363,7 +363,7 @@
                                 </div>
                                 <div class="input-group">
                                     <label>Description</label>
-                                    <textarea class="form-control" id="desc" rows="4" required></textarea>
+                                    <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
                                 </div>
                                 <div class="input-group">
                                     <label>Feature Image (Primary)</label>
@@ -391,7 +391,7 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
+                                            <th>Image</th>
                                             <th>Title</th>
                                             <th>Country</th>
                                             <th>Type</th>
@@ -423,11 +423,7 @@
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                     <div class="input-group" style="flex: 1; min-width: 200px;">
                                         <label>Years of Experience</label>
-                                        <input type="number" class="form-control" value="15">
-                                    </div>
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
-                                        <label>Completed Projects</label>
-                                        <input type="number" class="form-control" value="250">
+                                        <input type="number" class="form-control" value="10">
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
@@ -595,9 +591,7 @@
                 if(u === 'admin' && p === '1234') {
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('admin-section').style.display = 'block';
-                    renderAdminTable();
-                    renderSectors();
-                    renderFinishes();
+                    if (typeof refreshAdminDashboard === 'function') refreshAdminDashboard();
                 } else {
                     alert('Invalid credentials');
                 }
@@ -642,24 +636,27 @@
             const projForm = document.getElementById('project-form');
             if (projForm) {
                 projForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    saveAdminProject();
+                    if (typeof saveProject === 'function') {
+                        saveProject(e);
+                    }
                 });
             }
 
             const sectorForm = document.getElementById('sector-form');
             if (sectorForm) {
                 sectorForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    saveSector();
+                    if (typeof saveSector === 'function') {
+                        saveSector(e);
+                    }
                 });
             }
 
             const finishForm = document.getElementById('finish-form');
             if (finishForm) {
                 finishForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    saveFinish();
+                    if (typeof saveFinish === 'function') {
+                        saveFinish(e);
+                    }
                 });
             }
             
@@ -681,37 +678,7 @@
             });
         });
 
-        function renderAdminTable() {
-            if (typeof getProjects !== 'function') return;
-            const projects = getProjects();
-            const tbody = document.getElementById('admin-project-list');
-            
-            // update stat
-            const statProjects = document.getElementById('stat-projects');
-            if(statProjects) statProjects.innerText = projects.length;
 
-            let html = '';
-            projects.forEach(p => {
-                html += `
-                    <tr>
-                        <td style="font-weight: 500;">#${p.id}</td>
-                        <td>${p.title}</td>
-                        <td>${p.country || '-'}</td>
-                        <td>${p.type}</td>
-                        <td>${p.finish}</td>
-                        <td style="text-align: right;">
-                            <button class="btn btn-outline btn-sm" onclick="editProject(${p.id})"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            if(projects.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No projects found.</td></tr>';
-            } else {
-                tbody.innerHTML = html;
-            }
-        }
 
         function removeFeatureImage() {
             currentFeatureImage = null;
@@ -751,58 +718,39 @@
             gContainer.innerHTML = gHtml;
         }
 
-        function saveAdminProject() {
-            if (typeof getProjects !== 'function' || typeof saveProjects !== 'function') return;
-            const idVal = document.getElementById('project-id').value;
-            const title = document.getElementById('title').value;
-            const type = document.getElementById('type').value;
-            const finish = document.getElementById('finish').value;
-            const country = document.getElementById('country').value;
-            const desc = document.getElementById('desc').value;
-            
-            let projects = getProjects();
-            let imagesToSave = [];
-            
-            if (currentFeatureImage) imagesToSave.push(currentFeatureImage);
-            imagesToSave = imagesToSave.concat(currentGalleryImages);
-            
-            if (idVal) {
-                const index = projects.findIndex(p => p.id === parseInt(idVal));
-                if (index > -1) {
-                    projects[index] = { id: parseInt(idVal), title, type, country, finish, desc, images: imagesToSave };
-                }
-            } else {
-                if (imagesToSave.length === 0) {
-                    alert("Please provide at least a feature image.");
-                    return;
-                }
-                const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
-                projects.push({ id: newId, title, type, country, finish, desc, images: imagesToSave });
-            }
-
-            saveProjects(projects);
-            resetForm();
-            renderAdminTable();
-        }
-
         function editProject(id) {
-            if (typeof getProjectById !== 'function') return;
-            const project = getProjectById(id);
+            if (!window.adminDataCache || !window.adminDataCache.projects) return;
+            const project = window.adminDataCache.projects.find(p => p.id === id);
             if (!project) return;
             
             document.getElementById('form-title').innerText = "Edit Project";
             document.getElementById('project-id').value = project.id;
             document.getElementById('title').value = project.title;
-            document.getElementById('type').value = project.type;
-            document.getElementById('finish').value = project.finish;
+            // set value but if select doesn't have it, it does nothing
+            setTimeout(() => {
+                document.getElementById('type').value = project.sector_id || project.type;
+                document.getElementById('finish').value = project.finish_id || project.finish;
+            }, 50);
+            
             document.getElementById('country').value = project.country || "";
-            document.getElementById('desc').value = project.desc || "";
+            document.getElementById('description').value = project.description || project.desc || "";
             document.getElementById('feature-image-file').value = "";
             document.getElementById('gallery-images-file').value = "";
             
-            if (project.images && project.images.length > 0) {
-                currentFeatureImage = project.images[0];
-                currentGalleryImages = project.images.slice(1);
+            let images = [];
+            try {
+                if (typeof project.gallery_images === 'string') {
+                    images = JSON.parse(project.gallery_images || "[]");
+                } else if (Array.isArray(project.gallery_images)) {
+                    images = project.gallery_images;
+                } else if (Array.isArray(project.images)) {
+                    images = project.images;
+                }
+            } catch(e) {}
+            
+            if (images && images.length > 0) {
+                currentFeatureImage = images[0];
+                currentGalleryImages = images.slice(1);
             } else {
                 currentFeatureImage = null;
                 currentGalleryImages = [];
@@ -811,16 +759,6 @@
             
             // Scroll to form smoothly
             document.getElementById('project-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function deleteProject(id) {
-            if (typeof getProjects !== 'function' || typeof saveProjects !== 'function') return;
-            if(confirm("Are you sure you want to delete this project?")) {
-                let projects = getProjects();
-                projects = projects.filter(p => p.id !== id);
-                saveProjects(projects);
-                renderAdminTable();
-            }
         }
 
         function logoutAdmin(e) {
