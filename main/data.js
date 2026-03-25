@@ -138,6 +138,22 @@ async function renderContactSettings() {
     }
 }
 
+async function renderServicesSection() {
+    const data = await getAllData();
+    if (!data || !data.services || data.services.length === 0) return;
+
+    const servicesGrid = document.querySelector('.services-grid');
+    if (servicesGrid) {
+        servicesGrid.innerHTML = data.services.map(service => `
+            <div class="service-card">
+                <i class="${service.icon_class} service-icon"></i>
+                <h3 class="service-title">${service.title}</h3>
+                <p class="service-desc">${service.description}</p>
+            </div>
+        `).join('');
+    }
+}
+
 async function renderVendorsSection() {
     const data = await getAllData();
     if (!data || !data.vendors || data.vendors.length === 0) return;
@@ -174,4 +190,5 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAboutSection();
     renderContactSettings();
     renderVendorsSection();
+    renderServicesSection();
 });

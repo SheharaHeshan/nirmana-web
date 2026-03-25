@@ -68,6 +68,28 @@ export default {
       }
 
       // ---------------------------------------------------------
+      // 1.5 SERVICES (CRUD)
+      // ---------------------------------------------------------
+      if (url.pathname.startsWith("/api/services")) {
+        if (method === "POST") {
+          const { id, title, description, icon_class } = await request.json();
+          if (id) {
+            await env.DB.prepare("UPDATE services SET title = ?, description = ?, icon_class = ? WHERE id = ?")
+              .bind(title, description, icon_class, id).run();
+          } else {
+            await env.DB.prepare("INSERT INTO services (title, description, icon_class) VALUES (?, ?, ?)")
+              .bind(title, description, icon_class).run();
+          }
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+        if (method === "DELETE") {
+          const id = url.searchParams.get("id");
+          await env.DB.prepare("DELETE FROM services WHERE id = ?").bind(id).run();
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+      }
+
+      // ---------------------------------------------------------
 // 2. PROJECTS (CRUD + R2 Image Management)
 // ---------------------------------------------------------
 if (url.pathname.startsWith("/api/projects")) {
@@ -279,6 +301,7 @@ if (url.pathname.startsWith("/api/projects")) {
         const vendors = await env.DB.prepare("SELECT * FROM vendors").all();
         const sectors = await env.DB.prepare("SELECT * FROM sectors").all();
         const finishes = await env.DB.prepare("SELECT * FROM finishes").all();
+        const services = await env.DB.prepare("SELECT * FROM services").all();
         const about = await env.DB.prepare("SELECT * FROM company_info WHERE id=1").first();
         const contact = await env.DB.prepare("SELECT * FROM contact_settings WHERE id=1").first();
 
@@ -287,6 +310,7 @@ if (url.pathname.startsWith("/api/projects")) {
           vendors: vendors.results,
           sectors: sectors.results,
           finishes: finishes.results,
+          services: services.results,
           about,
           contact
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

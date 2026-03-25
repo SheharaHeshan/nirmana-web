@@ -18,6 +18,7 @@ async function refreshAdminDashboard() {
         renderSectors(data.sectors);
         renderFinishes(data.finishes);
         renderVendors(data.vendors);
+        renderServices(data.services || []);
         populateForms(data.about, data.contact);
     }
 }
@@ -254,6 +255,104 @@ async function updateContact(event) {
         body: JSON.stringify(data)
     });
     showNotification("Contact info updated!", 'success');
+}
+
+// --- SERVICES SECTION ---
+async function saveService(event) {
+    event.preventDefault();
+    const id = document.getElementById('service-id').value;
+    const title = document.getElementById('service-title').value;
+    const description = document.getElementById('service-description').value;
+    const icon_class = document.getElementById('service-icon').value;
+
+    const data = { 
+        id: id ? parseInt(id) : null, 
+        title, 
+        description, 
+        icon_class: icon_class.trim() || getAutoIcon(title) 
+    };
+
+    try {
+        await fetch(`${BASE_URL}/services`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        showNotification(id ? "Service updated!" : "Service added!", 'success');
+        cancelServiceEdit();
+        refreshAdminDashboard();
+    } catch (err) {
+        showNotification("Error saving service", 'error');
+    }
+}
+
+async function deleteService(id) {
+    if (!confirm("Are you sure you want to delete this service?")) return;
+    try {
+        await fetch(`${BASE_URL}/services?id=${id}`, { method: 'DELETE' });
+        showNotification("Service deleted!", 'success');
+        refreshAdminDashboard();
+    } catch (err) {
+        showNotification("Error deleting service", 'error');
+    }
+}
+
+function editService(id) {
+    const s = window.adminDataCache.services.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('service-id').value = s.id;
+    document.getElementById('service-title').value = s.title;
+    document.getElementById('service-description').value = s.description;
+    document.getElementById('service-icon').value = s.icon_class || "";
+    
+    document.getElementById('service-form-title').innerText = "Edit Service";
+    document.getElementById('service-submit-btn').innerHTML = '<i class="fas fa-save"></i> Save Changes';
+    document.getElementById('service-cancel-btn').style.display = 'inline-block';
+}
+
+function cancelServiceEdit() {
+    document.getElementById('service-id').value = "";
+    document.getElementById('service-title').value = "";
+    document.getElementById('service-description').value = "";
+    document.getElementById('service-icon').value = "";
+    
+    document.getElementById('service-form-title').innerText = "Add Service";
+    document.getElementById('service-submit-btn').innerHTML = '<i class="fas fa-plus"></i> Add Service';
+    document.getElementById('service-cancel-btn').style.display = 'none';
+}
+
+function renderServices(services) {
+    const tbody = document.getElementById('services-list');
+    if (!tbody) return;
+    tbody.innerHTML = services.map(s => {
+        const icon = s.icon_class || getAutoIcon(s.title);
+        return `
+            <tr>
+                <td style="font-size: 1.5rem; color: var(--primary);"><i class="${icon}"></i></td>
+                <td style="font-weight: 600;">${s.title}</td>
+                <td>${s.description.substring(0, 50)}${s.description.length > 50 ? '...' : ''}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-outline btn-sm" onclick="editService(${s.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteService(${s.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getAutoIcon(title) {
+    const t = title.toLowerCase();
+    if (t.includes('titanium')) return 'fas fa-layer-group';
+    if (t.includes('wash')) return 'fas fa-water';
+    if (t.includes('clay')) return 'fab fa-modx';
+    if (t.includes('sand')) return 'fas fa-wind';
+    if (t.includes('granular')) return 'fas fa-cubes';
+    if (t.includes('cement')) return 'fas fa-border-none';
+    if (t.includes('concrete')) return 'fas fa-gem';
+    if (t.includes('paint')) return 'fas fa-paint-roller';
+    if (t.includes('water')) return 'fas fa-fill-drip';
+    return 'fas fa-star';
 }
 
 // --- RENDERING LOGIC (UI UPDATES) ---
