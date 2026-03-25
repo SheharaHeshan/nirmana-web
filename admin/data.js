@@ -19,6 +19,7 @@ async function refreshAdminDashboard() {
         renderFinishes(data.finishes);
         renderVendors(data.vendors);
         renderServices(data.services || []);
+        renderGlobalReach(data.global_reach || []);
         populateForms(data.about, data.contact);
     }
 }
@@ -225,23 +226,54 @@ function editVendor(vId) {
     document.getElementById('vendors-section').scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- ABOUT & CONTACT ACTIONS ---
-
-async function updateAbout(event) {
+// --- ABOUT ACTIONS ---
+async function saveAbout(event) {
     event.preventDefault();
-    const data = {
-        story: document.getElementById('about-story').value,
-        years_experience: document.getElementById('years-exp').value,
-        completed_projects: document.getElementById('projects-count').value
-    };
-    await fetch(`${BASE_URL}/about`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    showNotification("About info updated!", 'success');
+    const formData = new FormData();
+    formData.append('story', document.getElementById('about-story').value);
+    formData.append('years_experience', document.getElementById('years-exp').value);
+    
+    const fileInput = document.getElementById('about-image-file');
+    if (fileInput.files[0]) {
+        formData.append('about_image', fileInput.files[0]);
+    }
+    formData.append('remove_image', document.getElementById('remove-about-image').value);
+
+    try {
+        await fetch(`${BASE_URL}/about`, {
+            method: 'POST',
+            body: formData
+        });
+        showNotification("About information updated!", 'success');
+        refreshAdminDashboard();
+    } catch (err) {
+        showNotification("Error updating about info", 'error');
+    }
 }
 
+function previewAboutImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const container = document.getElementById('about-image-preview-container');
+            const preview = document.getElementById('about-image-preview');
+            preview.src = e.target.result;
+            container.style.display = 'block';
+            document.getElementById('remove-about-image').value = "false";
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeAboutImage() {
+    document.getElementById('about-image-file').value = "";
+    document.getElementById('about-image-preview-container').style.display = 'none';
+    document.getElementById('about-image-preview').src = "";
+    document.getElementById('remove-about-image').value = "true";
+}
+
+// --- CONTACT ACTIONS ---
 async function updateContact(event) {
     event.preventDefault();
     const data = {
@@ -355,6 +387,90 @@ function getAutoIcon(title) {
     return 'fas fa-star';
 }
 
+// --- GLOBAL REACH ACTIONS ---
+async function saveReach(event) {
+    event.preventDefault();
+    const id = document.getElementById('reach-id').value;
+    const country_name = document.getElementById('reach-country').value;
+    const description = document.getElementById('reach-role').value;
+
+    const data = { id: id ? parseInt(id) : null, country_name, description };
+
+    try {
+        await fetch(`${BASE_URL}/global-reach`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        showNotification(id ? "Location updated!" : "Location added!", 'success');
+        cancelReachEdit();
+        refreshAdminDashboard();
+    } catch (e) {
+        showNotification("Error saving location", 'error');
+    }
+}
+
+async function deleteReach(id) {
+    if (!confirm("Delete this location?")) return;
+    try {
+        await fetch(`${BASE_URL}/global-reach?id=${id}`, { method: 'DELETE' });
+        showNotification("Location deleted!", 'success');
+        refreshAdminDashboard();
+    } catch (e) {
+        showNotification("Error deleting location", 'error');
+    }
+}
+
+function editReach(id) {
+    const r = window.adminDataCache.global_reach.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('reach-id').value = r.id;
+    document.getElementById('reach-country').value = r.country_name;
+    document.getElementById('reach-role').value = r.description;
+    
+    document.getElementById('reach-form-title').innerText = "Edit Location";
+    document.getElementById('reach-submit-btn').innerHTML = '<i class="fas fa-save"></i> Save Changes';
+    document.getElementById('reach-cancel-btn').style.display = 'inline-block';
+}
+
+function cancelReachEdit() {
+    document.getElementById('reach-id').value = "";
+    document.getElementById('reach-country').value = "";
+    document.getElementById('reach-role').value = "";
+    
+    document.getElementById('reach-form-title').innerText = "Add Location";
+    document.getElementById('reach-submit-btn').innerHTML = '<i class="fas fa-plus"></i> Add Location';
+    document.getElementById('reach-cancel-btn').style.display = 'none';
+}
+
+function renderGlobalReach(reach) {
+    const tbody = document.getElementById('reach-list');
+    if (!tbody) return;
+    tbody.innerHTML = reach.map(r => {
+        const flagUrl = getFlagUrl(r.country_name);
+        return `
+            <tr>
+                <td><img src="${flagUrl}" style="width: 32px; border-radius: 2px; border: 1px solid #eee;"></td>
+                <td style="font-weight: 600;">${r.country_name}</td>
+                <td>${r.description}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-outline btn-sm" onclick="editReach(${r.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteReach(${r.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getFlagUrl(country) {
+    const flagMap = {
+        'Sri Lanka': 'lk', 'Maldives': 'mv', 'USA': 'us', 
+        'UK': 'gb', 'Australia': 'au', 'UAE': 'ae', 'India': 'in'
+    };
+    const code = flagMap[country] || 'un';
+    return `https://flagcdn.com/${code.toLowerCase()}.svg`;
+}
+
 // --- RENDERING LOGIC (UI UPDATES) ---
 
 function renderProjects(projects, sectors, finishes) {
@@ -457,9 +573,18 @@ function renderVendors(vendors) {
 
 function populateForms(about, contact) {
     if (about) {
-        document.getElementById('about-story').value = about.story;
-        document.getElementById('years-exp').value = about.years_experience;
-        document.getElementById('projects-count').value = about.completed_projects;
+        document.getElementById('about-story').value = about.story || "";
+        document.getElementById('years-exp').value = about.years_experience || "";
+        
+        if (about.about_image) {
+            const container = document.getElementById('about-image-preview-container');
+            const preview = document.getElementById('about-image-preview');
+            preview.src = about.about_image;
+            container.style.display = 'block';
+            document.getElementById('remove-about-image').value = "false";
+        } else {
+            document.getElementById('about-image-preview-container').style.display = 'none';
+        }
     }
     if (contact) {
         document.getElementById('contact-email').value = contact.email;

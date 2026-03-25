@@ -18,7 +18,7 @@ export default {
     };
 
     try {
-      if (method === "GET" && (url.pathname.startsWith("/projects/") || url.pathname.startsWith("/vendors/"))) {
+      if (method === "GET" && (url.pathname.startsWith("/projects/") || url.pathname.startsWith("/vendors/") || url.pathname.startsWith("/about/"))) {
         const objectPath = decodeURIComponent(url.pathname.substring(1)); 
         const object = await env.MY_BUCKET.get(objectPath);
         if (object === null) {
@@ -85,6 +85,28 @@ export default {
         if (method === "DELETE") {
           const id = url.searchParams.get("id");
           await env.DB.prepare("DELETE FROM services WHERE id = ?").bind(id).run();
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+      }
+
+      // ---------------------------------------------------------
+      // 1.6 GLOBAL REACH (CRUD)
+      // ---------------------------------------------------------
+      if (url.pathname.startsWith("/api/global-reach")) {
+        if (method === "POST") {
+          const { id, country_name, description } = await request.json();
+          if (id) {
+            await env.DB.prepare("UPDATE global_reach SET country_name = ?, description = ? WHERE id = ?")
+              .bind(country_name, description, id).run();
+          } else {
+            await env.DB.prepare("INSERT INTO global_reach (country_name, description) VALUES (?, ?)")
+              .bind(country_name, description).run();
+          }
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+        if (method === "DELETE") {
+          const id = url.searchParams.get("id");
+          await env.DB.prepare("DELETE FROM global_reach WHERE id = ?").bind(id).run();
           return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
       }
@@ -280,9 +302,44 @@ if (url.pathname.startsWith("/api/projects")) {
       // 4. ABOUT & CONTACT (Update Only)
       // ---------------------------------------------------------
       if (url.pathname === "/api/about" && method === "POST") {
-        const data = await request.json();
-        await env.DB.prepare("UPDATE company_info SET story=?, years_experience=?, completed_projects=? WHERE id=1")
-          .bind(data.story, data.years_experience, data.completed_projects).run();
+        const formData = await request.formData();
+        const story = formData.get("story");
+        const years_experience = formData.get("years_experience");
+        const aboutFile = formData.get("about_image");
+        const removeImage = formData.get("remove_image") === "true";
+
+        let aboutImageUrl = null;
+        const current = await env.DB.prepare("SELECT about_image FROM company_info WHERE id=1").first();
+        aboutImageUrl = current?.about_image;
+
+        if (aboutFile && aboutFile.size > 0) {
+          if (aboutImageUrl) {
+            let key = aboutImageUrl;
+            if (key.includes("about/")) key = key.substring(key.indexOf("about/"));
+            await env.MY_BUCKET.delete(key);
+          }
+          const key = `about/${crypto.randomUUID()}-${sanitizeFilename(aboutFile.name)}`;
+          await env.MY_BUCKET.put(key, aboutFile.stream(), { httpMetadata: { contentType: aboutFile.type } });
+          aboutImageUrl = `${baseUrl}/${key}`;
+        } else if (removeImage) {
+          if (aboutImageUrl) {
+            let key = aboutImageUrl;
+            if (key.includes("about/")) key = key.substring(key.indexOf("about/"));
+            await env.MY_BUCKET.delete(key);
+          }
+          aboutImageUrl = null;
+        }
+
+        // UPSERT logic: Insert or replace row ID 1
+        await env.DB.prepare(`
+          INSERT INTO company_info (id, story, years_experience, about_image) 
+          VALUES (1, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET 
+            story = EXCLUDED.story, 
+            years_experience = EXCLUDED.years_experience, 
+            about_image = EXCLUDED.about_image
+        `).bind(story, years_experience, aboutImageUrl).run();
+          
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
 
@@ -297,20 +354,28 @@ if (url.pathname.startsWith("/api/projects")) {
       // 5. GET ALL DATA
       // ---------------------------------------------------------
       if (url.pathname === "/api/all" && method === "GET") {
-        const projects = await env.DB.prepare("SELECT * FROM projects").all();
-        const vendors = await env.DB.prepare("SELECT * FROM vendors").all();
-        const sectors = await env.DB.prepare("SELECT * FROM sectors").all();
-        const finishes = await env.DB.prepare("SELECT * FROM finishes").all();
-        const services = await env.DB.prepare("SELECT * FROM services").all();
-        const about = await env.DB.prepare("SELECT * FROM company_info WHERE id=1").first();
-        const contact = await env.DB.prepare("SELECT * FROM contact_settings WHERE id=1").first();
+        // Resilient fetch for all tables
+        let projects = { results: [] }, vendors = { results: [] };
+        let sectors = { results: [] }, finishes = { results: [] };
+        let services = { results: [] }, globalReach = { results: [] };
+        let about = null, contact = null;
+
+        try { projects = await env.DB.prepare("SELECT * FROM projects").all(); } catch(e) {}
+        try { vendors = await env.DB.prepare("SELECT * FROM vendors").all(); } catch(e) {}
+        try { sectors = await env.DB.prepare("SELECT * FROM sectors").all(); } catch(e) {}
+        try { finishes = await env.DB.prepare("SELECT * FROM finishes").all(); } catch(e) {}
+        try { services = await env.DB.prepare("SELECT * FROM services").all(); } catch(e) {}
+        try { globalReach = await env.DB.prepare("SELECT * FROM global_reach").all(); } catch(e) {}
+        try { about = await env.DB.prepare("SELECT * FROM company_info WHERE id=1").first(); } catch(e) {}
+        try { contact = await env.DB.prepare("SELECT * FROM contact_settings WHERE id=1").first(); } catch(e) {}
 
         return new Response(JSON.stringify({
-          projects: projects.results,
-          vendors: vendors.results,
-          sectors: sectors.results,
-          finishes: finishes.results,
-          services: services.results,
+          projects: projects.results || [],
+          vendors: vendors.results || [],
+          sectors: sectors.results || [],
+          finishes: finishes.results || [],
+          services: services.results || [],
+          global_reach: globalReach.results || [],
           about,
           contact
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

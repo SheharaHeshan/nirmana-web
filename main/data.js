@@ -103,15 +103,37 @@ async function renderAboutSection() {
     const expBadge = document.querySelector('.experience-badge .num');
     if (expBadge) expBadge.textContent = data.about.years_experience;
 
-    // We can replace the paragraph content if we have a specific container
-    // We'll target the text paragraph by looking for the one right after the title
-    const aboutContainer = document.querySelector('.about-content');
-    if (aboutContainer && data.about.story) {
-        // Try finding paragraphs
-        const paragraphs = aboutContainer.querySelectorAll('p:not(.footprint-title)');
-        if (paragraphs.length > 0) {
-            paragraphs[0].textContent = data.about.story;
-        }
+    // Update Image
+    const aboutImg = document.querySelector('.about-image');
+    if (aboutImg && data.about.about_image) {
+        aboutImg.src = data.about.about_image;
+    }
+
+    // Update Story
+    const aboutContent = document.querySelector('.about-content p');
+    if (aboutContent && data.about.story) {
+        aboutContent.textContent = data.about.story;
+    }
+
+    // Render Global Reach
+    const reachContainer = document.querySelector('.footprint-locations');
+    if (reachContainer && data.global_reach && data.global_reach.length > 0) {
+        reachContainer.innerHTML = data.global_reach.map(r => {
+            const flagMap = { 
+                'Sri Lanka': 'lk', 'Maldives': 'mv', 'USA': 'us', 
+                'UK': 'gb', 'Australia': 'au', 'UAE': 'ae', 'India': 'in' 
+            };
+            const code = flagMap[r.country_name] || 'un';
+            return `
+                <div class="location-item">
+                    <img src="https://flagcdn.com/${code.toLowerCase()}.svg" alt="${r.country_name} Flag" class="location-flag">
+                    <div class="location-info">
+                        <span class="location-country">${r.country_name}</span>
+                        <span class="location-role">${r.description}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 }
 

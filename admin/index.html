@@ -227,6 +227,7 @@
                     <a class="nav-item" data-target="projects-section"><i class="fas fa-folder-open"></i> Projects</a>
                     <a class="nav-item" data-target="services-section"><i class="fas fa-layer-group"></i> Services</a>
                     <a class="nav-item" data-target="about-section"><i class="fas fa-info-circle"></i> About</a>
+                    <a class="nav-item" data-target="global-reach-section"><i class="fas fa-globe-americas"></i> Global Reach</a>
                     <a class="nav-item" data-target="vendors-section"><i class="fas fa-truck"></i> Vendors</a>
                     <a class="nav-item" data-target="contact-section"><i class="fas fa-envelope"></i> Contact</a>
                 </nav>
@@ -470,13 +471,63 @@
                                         <label>Years of Experience</label>
                                         <input type="number" id="years-exp" class="form-control">
                                     </div>
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
-                                        <label>Completed Projects</label>
-                                        <input type="number" id="projects-count" class="form-control">
+                                </div>
+                                <div class="input-group">
+                                    <label>Section Image</label>
+                                    <input type="file" id="about-image-file" class="form-control" accept="image/*" onchange="previewAboutImage(event)">
+                                    <div id="about-image-preview-container" style="margin-top: 10px; display: none;">
+                                        <img id="about-image-preview" src="" style="width: 240px; height: 150px; object-fit: cover; border-radius: 8px;">
+                                        <div style="margin-top: 5px;">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeAboutImage()"><i class="fas fa-trash"></i> Remove</button>
+                                        </div>
+                                        <input type="hidden" id="remove-about-image" value="false">
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
                             </form>
+                        </div>
+                    </div>
+
+                    <!-- Global Reach Section -->
+                    <div id="global-reach-section" class="dashboard-section">
+                        <h2 class="section-label"><i class="fas fa-globe-americas"></i> Global Reach</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title" id="reach-form-title">Add Location</h2>
+                                <p>Manage the countries and roles displayed in the About section.</p>
+                            </div>
+                            <form onsubmit="saveReach(event)">
+                                <input type="hidden" id="reach-id">
+                                <div class="input-group">
+                                    <label>Country Name</label>
+                                    <input type="text" id="reach-country" class="form-control" placeholder="e.g. Sri Lanka" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Role / Description</label>
+                                    <input type="text" id="reach-role" class="form-control" placeholder="e.g. Headquarters & Projects" required>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" id="reach-submit-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Location</button>
+                                    <button type="button" id="reach-cancel-btn" class="btn btn-outline" style="display: none;" onclick="cancelReachEdit()">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Flag</th>
+                                            <th>Country</th>
+                                            <th>Role</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reach-list">
+                                        <!-- Dynamic load -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
