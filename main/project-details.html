@@ -254,15 +254,16 @@
     <script src="data.js"></script>
     <script src="script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             let id = params.get('id');
 
             // Get actual object from the CMS
-            let project = getProjectById(id);
+            let project = await getProjectById(id);
             if (!project) {
                 // fallback if missing
-                project = getProjects()[0];
+                const projects = await getProjects();
+                project = projects[0];
             }
 
             document.getElementById('project-title').textContent = project.title;

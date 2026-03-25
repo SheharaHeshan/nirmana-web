@@ -191,16 +191,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Make project cards clickable for detailed view
-    const projectCards = document.querySelectorAll('.project-card');
-    projectCards.forEach((card, index) => {
-        card.style.cursor = 'pointer';
-        card.addEventListener('click', (e) => {
-            // Prevent double firing if the inner link was clicked
-            if (e.target.closest('.view-project')) {
-                e.preventDefault();
-            }
-            window.location.href = `project-details.html?id=${index + 1}`;
-        });
-    });
 });
