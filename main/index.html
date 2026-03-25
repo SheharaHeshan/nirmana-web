@@ -259,16 +259,17 @@
                 <ul class="contact-list">
                     <li>
                         <i class="fas fa-map-marker-alt text-red"></i>
-                        <span>348,Kesbapana, Unawatuna galle</span>
+                        <span id="contact-address-text">Loading...</span>
                     </li>
-                    <li>
-                        <i class="fas fa-phone-alt text-red"></i>
-                        <span>+94 771448372 , +94 912223986</span>
-
+                    <li style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-phone-alt text-red" style="margin-top: 5px;"></i>
+                        <div id="contact-phone-container" style="display: flex; flex-direction: column; gap: 5px;">
+                            <span>Loading...</span>
+                        </div>
                     </li>
                     <li>
                         <i class="fas fa-envelope text-red"></i>
-                        <span>rasikaanuradha@gmail.com</span>
+                        <span id="contact-email-text">Loading...</span>
                     </li>
                 </ul>
             </div>
@@ -281,12 +282,9 @@
                         <input type="email" name="email" placeholder="Email Address" required>
                     </div>
                     <div class="form-group">
-                        <select name="floorType" required>
-                            <option value="" disabled selected>Select Floor Type</option>
-                            <option value="titanium">Titanium Finish</option>
-                            <option value="epoxy">Epoxy Coating</option>
-                            <option value="polished-concrete">Polished Concrete</option>
-                            <option value="other">Other Surfaces</option>
+                        <select name="service" id="contact-service-select" required>
+                            <option value="" disabled selected>Select Service</option>
+                            <!-- Dynamically loaded from Worker -->
                         </select>
                     </div>
                     <div class="form-group">

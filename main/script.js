@@ -155,40 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Form Submission Details
-    const form = document.getElementById('contactForm');
-
-    if (!form) {
-        console.error('contactForm not found');
-        return;
-    }
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log('submit intercepted');
-
-        try {
-            const formData = new FormData(form);
-
-            const response = await fetch('https://email-sender.sheshan.workers.dev', {
-                method: 'POST',
-                body: formData
-            });
-
-            console.log('response status:', response.status);
-
-            if (response.ok) {
-                showCustomAlert('Success!', 'Thank you! Your message has been sent to us.', true);
-                form.reset();
-            } else {
-                const text = await response.text();
-                console.error('server returned error:', text);
-                showCustomAlert('Error!', 'Something went wrong. Please try again.', false);
-            }
-        } catch (err) {
-            console.error('fetch error:', err);
-            showCustomAlert('Error!', 'Request failed. Please check your connection.', false);
-        }
-    });
+    // Note: Form submission handled in data.js for D1 + Email sync.
 
 });

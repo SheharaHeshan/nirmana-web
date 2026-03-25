@@ -141,22 +141,19 @@ async function renderContactSettings() {
     const data = await getAllData();
     if (!data || !data.contact) return;
 
-    const contactList = document.querySelector('.contact-list');
-    if (contactList) {
-        contactList.innerHTML = `
-            <li>
-                <i class="fas fa-map-marker-alt text-red"></i>
-                <span>${data.contact.address}</span>
-            </li>
-            <li>
-                <i class="fas fa-phone-alt text-red"></i>
-                <span>${data.contact.phone}</span>
-            </li>
-            <li>
-                <i class="fas fa-envelope text-red"></i>
-                <span><a href="mailto:${data.contact.email}" style="color: inherit; text-decoration: none;">${data.contact.email}</a></span>
-            </li>
-        `;
+    const emailEl = document.getElementById('contact-email-text');
+    if (emailEl) emailEl.innerHTML = `<a href="mailto:${data.contact.email}" style="color: inherit; text-decoration: none;">${data.contact.email}</a>`;
+
+    const addressEl = document.getElementById('contact-address-text');
+    if (addressEl) addressEl.textContent = data.contact.address;
+
+    const phoneContainer = document.getElementById('contact-phone-container');
+    if (phoneContainer && data.contact.phone) {
+        // Split by comma OR newline to be flexible for the admin
+        const numbers = data.contact.phone.replace(/,/g, '\n').split('\n').map(n => n.trim()).filter(Boolean);
+        phoneContainer.innerHTML = numbers.map(num => `
+            <a href="tel:${num.replace(/\s+/g, '')}" style="color: inherit; text-decoration: none; display: block;">${num}</a>
+        `).join('');
     }
 }
 
@@ -206,11 +203,125 @@ async function renderVendorsSection() {
         `;
     }
 }
+async function initInquiryForm() {
+    const data = await getAllData();
+    const select = document.getElementById('contact-service-select');
+    if (select && data.services) {
+        select.innerHTML = '<option value="" disabled selected>Select Service</option>' + 
+            data.services.map(s => `<option value="${s.title}">${s.title}</option>`).join('');
+    }
 
+    const form = document.getElementById('contactForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // 1. Enter Loading State
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+            
+            const formData = new FormData(form);
+            const payload = {
+                name: formData.get('fullName'),
+                email: formData.get('email'),
+                service: formData.get('service'), 
+                message: formData.get('projectDetails')
+            };
+
+            formData.append('floorType', formData.get('service'));
+
+            try {
+                // Run both requests in parallel for speed
+                const [d1Promise, emailPromise] = [
+                    fetch(`${BASE_URL}/inquiry`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }),
+                    fetch('https://email-sender.sheshan.workers.dev', {
+                        method: 'POST',
+                        body: formData
+                    })
+                ];
+
+                const [d1Res, emailRes] = await Promise.all([d1Promise, emailPromise]);
+
+                // 2. Exit Loading State
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+
+                if (d1Res.ok || emailRes.ok) {
+                    showModernAlert('Message Sent!', 'Thank you! We have received your inquiry. Our experts will get back to you shortly.', 'success');
+                    form.reset();
+                } else {
+                    throw new Error('Server Error');
+                }
+            } catch (err) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                showModernAlert('Oops!', 'There was a connection issue. Please try again in a moment.', 'error');
+            }
+        });
+    }
+}
+
+function showModernAlert(title, message, type = 'success') {
+    const overlay = document.createElement('div');
+    overlay.style = `
+        position: fixed; top:0; left:0; width:100%; height:100%; 
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 10000; animation: fadeIn 0.3s ease;
+    `;
+    
+    const color = type === 'success' ? '#10B981' : '#EF4444';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    const card = document.createElement('div');
+    card.style = `
+        background: white; padding: 2.5rem; border-radius: 1.5rem;
+        max-width: 420px; width: 90%; text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        transform: translateY(20px); transition: transform 0.3s ease;
+    `;
+    
+    card.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <i class="fas ${icon}" style="font-size: 4rem; color: ${color};"></i>
+        </div>
+        <h3 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; text-transform: uppercase;">${title}</h3>
+        <p style="color: #64748b; margin-bottom: 2rem; line-height: 1.6;">${message}</p>
+        <button id="close-alert-btn" style="
+            background: #1e293b; color: white; border: none; 
+            padding: 1rem 2rem; border-radius: 0.75rem; 
+            font-weight: 700; width: 100%; cursor: pointer;
+            transition: transform 0.2s;
+        ">CONTINUE</button>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    
+    // Animate in
+    setTimeout(() => card.style.transform = 'translateY(0)', 10);
+
+    const close = () => {
+        card.style.transform = 'translateY(20px)';
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    overlay.querySelector('#close-alert-btn').onclick = close;
+    overlay.onclick = (e) => { if(e.target === overlay) close(); };
+}
 // Global initialization
 document.addEventListener('DOMContentLoaded', () => {
     renderAboutSection();
     renderContactSettings();
     renderVendorsSection();
     renderServicesSection();
+    initInquiryForm();
 });

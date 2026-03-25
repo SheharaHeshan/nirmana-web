@@ -20,6 +20,7 @@ async function refreshAdminDashboard() {
         renderVendors(data.vendors);
         renderServices(data.services || []);
         renderGlobalReach(data.global_reach || []);
+        renderInquiries(data.inquiries || []);
         populateForms(data.about, data.contact);
     }
 }
@@ -274,19 +275,24 @@ function removeAboutImage() {
 }
 
 // --- CONTACT ACTIONS ---
-async function updateContact(event) {
+async function saveContact(event) {
     event.preventDefault();
     const data = {
         email: document.getElementById('contact-email').value,
         phone: document.getElementById('contact-phone').value,
         address: document.getElementById('contact-address').value
     };
-    await fetch(`${BASE_URL}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    showNotification("Contact info updated!", 'success');
+    try {
+        await fetch(`${BASE_URL}/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        showNotification("Contact information updated!", 'success');
+        refreshAdminDashboard();
+    } catch (e) {
+        showNotification("Error saving contact info", 'error');
+    }
 }
 
 // --- SERVICES SECTION ---
@@ -592,7 +598,21 @@ function populateForms(about, contact) {
         document.getElementById('contact-address').value = contact.address;
     }
 }
-
+function renderInquiries(inquiries) {
+    const tbody = document.getElementById('inquiry-list');
+    if (!tbody) return;
+    tbody.innerHTML = inquiries.map(i => {
+        const date = new Date(i.created_at).toLocaleDateString();
+        return `
+            <tr>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">${date}</td>
+                <td style="font-weight: 600;">${i.name}</td>
+                <td><span style="background: #E0F2FE; color: #0369A1; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;">${i.service || 'N/A'}</span></td>
+                <td title="${i.message}">${i.message.substring(0, 40)}${i.message.length > 40 ? '...' : ''}</td>
+            </tr>
+        `;
+    }).join('');
+}
 // --- GLOBAL NOTIFICATION ---
 function showNotification(message, type = 'success') {
     let overlay = document.getElementById('global-notification-overlay');

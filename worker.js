@@ -112,6 +112,18 @@ export default {
       }
 
       // ---------------------------------------------------------
+      // 1.7 INQUIRIES (Client Submission & Admin Read)
+      // ---------------------------------------------------------
+      if (url.pathname.startsWith("/api/inquiry")) {
+        if (method === "POST") {
+          const { name, email, service, message } = await request.json();
+          await env.DB.prepare("INSERT INTO inquiries (name, email, service, message) VALUES (?, ?, ?, ?)")
+            .bind(name, email, service, message).run();
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+      }
+
+      // ---------------------------------------------------------
 // 2. PROJECTS (CRUD + R2 Image Management)
 // ---------------------------------------------------------
 if (url.pathname.startsWith("/api/projects")) {
@@ -345,8 +357,17 @@ if (url.pathname.startsWith("/api/projects")) {
 
       if (url.pathname === "/api/contact" && method === "POST") {
         const data = await request.json();
-        await env.DB.prepare("UPDATE contact_settings SET email=?, phone=?, address=? WHERE id=1")
-          .bind(data.email, data.phone, data.address).run();
+        
+        // UPSERT logic: Insert or replace row ID 1
+        await env.DB.prepare(`
+          INSERT INTO contact_settings (id, email, phone, address) 
+          VALUES (1, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET 
+            email = EXCLUDED.email, 
+            phone = EXCLUDED.phone, 
+            address = EXCLUDED.address
+        `).bind(data.email, data.phone, data.address).run();
+          
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
 
@@ -368,6 +389,10 @@ if (url.pathname.startsWith("/api/projects")) {
         try { globalReach = await env.DB.prepare("SELECT * FROM global_reach").all(); } catch(e) {}
         try { about = await env.DB.prepare("SELECT * FROM company_info WHERE id=1").first(); } catch(e) {}
         try { contact = await env.DB.prepare("SELECT * FROM contact_settings WHERE id=1").first(); } catch(e) {}
+        
+        // Fetch inquiries for admin
+        let inquiries = { results: [] };
+        try { inquiries = await env.DB.prepare("SELECT * FROM inquiries ORDER BY created_at DESC LIMIT 50").all(); } catch(e) {}
 
         return new Response(JSON.stringify({
           projects: projects.results || [],
@@ -376,6 +401,7 @@ if (url.pathname.startsWith("/api/projects")) {
           finishes: finishes.results || [],
           services: services.results || [],
           global_reach: globalReach.results || [],
+          inquiries: inquiries.results || [],
           about,
           contact
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

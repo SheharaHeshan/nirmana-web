@@ -599,8 +599,8 @@
                                     <input type="email" id="contact-email" class="form-control">
                                 </div>
                                 <div class="input-group">
-                                    <label>Phone</label>
-                                    <input type="text" id="contact-phone" class="form-control">
+                                    <label>Phone Numbers (One per line)</label>
+                                    <textarea id="contact-phone" class="form-control" rows="3"></textarea>
                                 </div>
                                 <div class="input-group">
                                     <label>Address</label>
@@ -620,20 +620,12 @@
                                         <tr>
                                             <th>Date</th>
                                             <th>Name</th>
+                                            <th>Service</th>
                                             <th>Message</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Oct 10</td>
-                                            <td>John Doe</td>
-                                            <td>Looking for titanium finish...</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Oct 08</td>
-                                            <td>Jane Smith</td>
-                                            <td>Residential project quote requested.</td>
-                                        </tr>
+                                    <tbody id="inquiry-list">
+                                        <!-- Inquiries will load here -->
                                     </tbody>
                                 </table>
                             </div>
