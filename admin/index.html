@@ -80,7 +80,7 @@
 
         /* Table */
         .table-container { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; min-width: 600px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
         thead th {
             text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--text-muted);
             border-bottom: 1px solid var(--border-color); background-color: #F8FAFC;
@@ -177,16 +177,12 @@
             .mobile-only-hide { display: none !important; }
             .sidebar-footer { display: block; padding: 1.5rem; }
             
-            /* Enhanced mobile card layout */
-            .card { padding: 1.25rem; margin-bottom: 1rem; border-radius: var(--radius-md); }
-            
+            /* Tabs behavior for mobile - Maintain single active section */
             .dashboard-section { 
-                display: block !important; 
-                margin-bottom: 2.5rem; 
-                border-bottom: 1px solid var(--border-color); 
-                padding-bottom: 2rem; 
+                display: none;
+                animation: fadeIn 0.3s ease; 
             }
-            .dashboard-section:last-child { border-bottom: none; }
+            .dashboard-section.active { display: block !important; }
             
             .section-label { 
                 display: flex; font-size: 1.25rem; color: var(--primary); 
@@ -923,7 +919,6 @@
                     document.querySelector('.sidebar').classList.remove('active');
                     document.querySelector('.sidebar-overlay').classList.remove('active');
                 } else {
-                    // Mobile mode - clean inline display so !important block takes over
                     dashboardSections.forEach(s => s.style.display = ''); 
                     document.querySelector('.sidebar').classList.remove('collapsed');
                     document.querySelector('.main-content').classList.remove('expanded');
