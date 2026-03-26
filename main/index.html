@@ -164,8 +164,9 @@
                     <i class="fas fa-spinner fa-spin fa-2x"></i>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 50px;">
-                <a href="projects.html" class="btn btn-primary">See More Projects</a>
+            <div style="text-align: center; margin-top: 50px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <button id="load-more-btn" class="btn btn-primary" onclick="loadMoreProjects()">Load More Projects</button>
+                <a href="projects.html" class="text-red" style="font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">View All Projects Catalogue</a>
             </div>
         </div>
     </section>
@@ -322,10 +323,27 @@
     <script src="data.js?v=3"></script>
     <script src="script.js?v=3"></script>
     <script>
+        let currentProjectLimit = 6;
+        
         document.addEventListener('DOMContentLoaded', () => {
-            renderProjectsGrid('featured-projects', 4);
+            renderProjectsGrid('featured-projects', 6);
         });
 
+        async function loadMoreProjects() {
+            const btn = document.getElementById('load-more-btn');
+            if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            currentProjectLimit += 6;
+            await renderProjectsGrid('featured-projects', currentProjectLimit);
+            
+            if(btn) btn.innerHTML = 'Load More Projects';
+            
+            // Check if we reached all projects to potentially hide the button
+            const projects = await getProjects();
+            if(currentProjectLimit >= projects.length) {
+                if(btn) btn.style.display = 'none';
+            }
+        }
     </script>
 </body>
 
