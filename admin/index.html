@@ -141,6 +141,14 @@
         }
         .content-area { padding: 2rem; max-width: 1200px; width: 100%; margin: 0 auto; }
 
+        .responsive-flex { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .flex-item { flex: 1; min-width: 240px; }
+        
+        @media (max-width: 768px) {
+            .responsive-flex { flex-direction: column !important; gap: 1rem !important; }
+            .flex-item { min-width: 100% !important; }
+        }
+
         /* Sections */
         .dashboard-section { display: none; animation: fadeIn 0.3s ease; }
         .dashboard-section.active { display: block; }
@@ -383,8 +391,8 @@
                         <h2 class="section-label"><i class="fas fa-folder-open"></i> Projects</h2>
                         
                         <!-- Manage Sectors and Finish Types -->
-                        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                            <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                        <div class="responsive-flex" style="margin-bottom: 1.5rem;">
+                            <div class="card flex-1" style="margin-bottom: 0;">
                                 <div class="card-header">
                                     <h2 class="card-title">Manage Sectors</h2>
                                     <p>Add, edit or delete sector types.</p>
@@ -410,7 +418,7 @@
                                 </div>
                             </div>
 
-                            <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+                            <div class="card flex-item" style="margin-bottom: 0;">
                                 <div class="card-header">
                                     <h2 class="card-title">Manage Finish Types</h2>
                                     <p>Add, edit or delete finish types.</p>
@@ -447,12 +455,12 @@
                                     <label>Project Title</label>
                                     <input type="text" class="form-control" id="title" name="title" required>
                                 </div>
-                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                <div class="responsive-flex">
+                                    <div class="input-group flex-item">
                                         <label>Sector Type</label>
                                         <select class="form-control" id="type" name="sector_id" required></select>
                                     </div>
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                    <div class="input-group flex-item">
                                         <label>Finish Type</label>
                                         <select class="form-control" id="finish" name="finish_id" required></select>
                                     </div>
@@ -572,8 +580,8 @@
                                     <label>Company Story</label>
                                     <textarea id="about-story" class="form-control" rows="5"></textarea>
                                 </div>
-                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                <div class="responsive-flex">
+                                    <div class="input-group flex-item">
                                         <label>Years of Experience</label>
                                         <input type="number" id="years-exp" class="form-control">
                                     </div>
@@ -646,12 +654,12 @@
                             </div>
                             <form onsubmit="saveVendor(event)">
                                 <input type="hidden" id="vendor-id" name="id">
-                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                <div class="responsive-flex">
+                                    <div class="input-group flex-item">
                                         <label>Vendor Name</label>
                                         <input type="text" class="form-control" id="vendor-name" name="name" required>
                                     </div>
-                                    <div class="input-group" style="flex: 1; min-width: 200px;">
+                                    <div class="input-group flex-item">
                                         <label>Service / Material</label>
                                         <input type="text" class="form-control" id="vendor-material" name="material" required>
                                     </div>
