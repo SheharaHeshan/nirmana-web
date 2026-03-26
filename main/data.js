@@ -155,6 +155,23 @@ async function renderContactSettings() {
             <a href="tel:${num.replace(/\s+/g, '')}" style="color: inherit; text-decoration: none; display: block;">${num}</a>
         `).join('');
     }
+
+    // Render WhatsApp Floating Button
+    if (data.contact.whatsapp_number) {
+        let whatsappBtn = document.getElementById('whatsapp-btn');
+        if (!whatsappBtn) {
+            whatsappBtn = document.createElement('a');
+            whatsappBtn.id = 'whatsapp-btn';
+            whatsappBtn.className = 'whatsapp-float';
+            whatsappBtn.target = '_blank';
+            whatsappBtn.innerHTML = '<i class="fab fa-whatsapp"></i>';
+            document.body.appendChild(whatsappBtn);
+        }
+        
+        const cleanNumber = data.contact.whatsapp_number.replace(/\D/g, '');
+        const message = encodeURIComponent(data.contact.whatsapp_message || "Hello! I'm interested in your services.");
+        whatsappBtn.href = `https://wa.me/${cleanNumber}?text=${message}`;
+    }
 }
 
 async function renderServicesSection() {

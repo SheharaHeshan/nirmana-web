@@ -360,13 +360,15 @@ if (url.pathname.startsWith("/api/projects")) {
         
         // UPSERT logic: Insert or replace row ID 1
         await env.DB.prepare(`
-          INSERT INTO contact_settings (id, email, phone, address) 
-          VALUES (1, ?, ?, ?)
+          INSERT INTO contact_settings (id, email, phone, address, whatsapp_number, whatsapp_message) 
+          VALUES (1, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET 
             email = EXCLUDED.email, 
             phone = EXCLUDED.phone, 
-            address = EXCLUDED.address
-        `).bind(data.email, data.phone, data.address).run();
+            address = EXCLUDED.address,
+            whatsapp_number = EXCLUDED.whatsapp_number,
+            whatsapp_message = EXCLUDED.whatsapp_message
+        `).bind(data.email, data.phone, data.address, data.whatsapp_number, data.whatsapp_message).run();
           
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }

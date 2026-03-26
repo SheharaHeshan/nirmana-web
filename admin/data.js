@@ -280,6 +280,8 @@ async function saveContact(event) {
     const data = {
         email: document.getElementById('contact-email').value,
         phone: document.getElementById('contact-phone').value,
+        whatsapp_number: document.getElementById('contact-whatsapp').value,
+        whatsapp_message: document.getElementById('contact-whatsapp-message').value,
         address: document.getElementById('contact-address').value
     };
     try {
@@ -593,9 +595,11 @@ function populateForms(about, contact) {
         }
     }
     if (contact) {
-        document.getElementById('contact-email').value = contact.email;
-        document.getElementById('contact-phone').value = contact.phone;
-        document.getElementById('contact-address').value = contact.address;
+        document.getElementById('contact-email').value = contact.email || "";
+        document.getElementById('contact-phone').value = contact.phone || "";
+        document.getElementById('contact-whatsapp').value = contact.whatsapp_number || "";
+        document.getElementById('contact-whatsapp-message').value = contact.whatsapp_message || "";
+        document.getElementById('contact-address').value = contact.address || "";
     }
 }
 function renderInquiries(inquiries) {
