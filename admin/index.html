@@ -796,25 +796,25 @@
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
+                const targetId = item.dataset.target;
                 const sectionTitle = item.dataset.title || 'Dashboard';
-                document.getElementById('current-section-title').textContent = sectionTitle;
-
-                if(window.innerWidth <= 1024) {
-                    const targetEl = document.getElementById(item.dataset.target);
-                    if(targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
-                    toggleSidebar();
-                    return; 
-                }
                 
+                // Update UI State
+                document.getElementById('current-section-title').textContent = sectionTitle;
                 navItems.forEach(i => i.classList.remove('active'));
                 dashboardSections.forEach(s => s.classList.remove('active'));
                 
                 item.classList.add('active');
-                const targetSection = document.getElementById(item.dataset.target);
+                const targetSection = document.getElementById(targetId);
                 if (targetSection) targetSection.classList.add('active');
 
-                // If switching to dashboard, refresh analytics
-                if (item.dataset.target === 'home-section') {
+                // Responsive selection: Close sidebar on mobile
+                if(window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+
+                // Data refresh: When switching to dashboard
+                if (targetId === 'home-section') {
                     if (typeof refreshDashboardAnalytics === 'function') refreshDashboardAnalytics();
                 }
             });
