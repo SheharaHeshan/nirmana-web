@@ -6,6 +6,7 @@
     <title>Admin Dashboard | Modern</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #E63946;
@@ -155,37 +156,64 @@
         .sidebar-overlay.active { display: block; opacity: 1; }
 
         /* Responsive Breakpoints */
-        .mobile-only { display: none; }
+        .mobile-only { display: none !important; }
         
         @media (max-width: 1024px) {
-            .dashboard-layout { flex-direction: column; }
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { 
+                width: 280px; 
+                transform: translateX(-100%); 
+                box-shadow: 10px 0 30px rgba(15, 23, 42, 0.15); 
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
             .sidebar.active { transform: translateX(0); }
+            .sidebar-overlay { 
+                transition: opacity 0.3s ease;
+            }
             .main-content { margin-left: 0; }
-            .topbar { padding: 0 1rem; }
+            .topbar { padding: 0 1rem; height: 56px; }
             .content-area { padding: 1rem; }
             
-            .mobile-only { display: flex; }
+            .mobile-only { display: flex !important; }
             .mobile-only-hide { display: none !important; }
-            .sidebar-footer { display: none; }
+            .sidebar-footer { display: block; padding: 1.5rem; }
             
-            /* Long CRUD behavior for mobile */
+            /* Enhanced mobile card layout */
+            .card { padding: 1.25rem; margin-bottom: 1rem; border-radius: var(--radius-md); }
+            
             .dashboard-section { 
                 display: block !important; 
-                margin-bottom: 3rem; 
-                border-bottom: 2px dashed var(--border-color); 
+                margin-bottom: 2.5rem; 
+                border-bottom: 1px solid var(--border-color); 
                 padding-bottom: 2rem; 
             }
             .dashboard-section:last-child { border-bottom: none; }
+            
             .section-label { 
-                display: block; font-size: 1.5rem; color: var(--primary); 
-                font-weight: 700; margin-bottom: 1.5rem; text-transform: uppercase; 
-                letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem;
+                display: flex; font-size: 1.25rem; color: var(--primary); 
+                font-weight: 700; margin-bottom: 1.25rem; align-items: center; gap: 0.5rem;
+                padding: 0.5rem 0;
             }
+
+            .dashboard-grid-2 { grid-template-columns: 1fr !important; gap: 1rem; }
+            
+            /* Fix chart heights on mobile */
+            .card > div[style*="height: 300px"] { height: 250px !important; }
         }
+
+        @media (max-width: 480px) {
+            .content-area { padding: 0.75rem; }
+            h1 { font-size: 1.5rem !important; }
+            .btn { padding: 0.5rem 0.85rem; font-size: 0.8rem; }
+            .card { padding: 1rem; }
+            .card-title { font-size: 1.1rem; }
+            .nav-item { padding: 0.6rem 1rem; font-size: 0.9rem; }
+        }
+
         @media (min-width: 1025px) {
             .section-label { display: none; }
         }
+        
+        .dashboard-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
     </style>
 </head>
 <body>
@@ -221,17 +249,20 @@
             <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
             <!-- Sidebar for PC -->
             <aside class="sidebar">
-                <div class="sidebar-header">
-                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 36px; max-width: 100%;">
+                <div class="sidebar-header" style="justify-content: space-between;">
+                    <img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 32px; max-width: 100%;">
+                    <button class="btn btn-ghost mobile-only" onclick="toggleSidebar()" style="padding: 0.5rem;">
+                        <i class="fas fa-times" style="font-size: 1.25rem; color: var(--text-muted);"></i>
+                    </button>
                 </div>
                 <nav class="sidebar-nav">
-                    <a class="nav-item active" data-target="home-section"><i class="fas fa-home"></i> Home</a>
-                    <a class="nav-item" data-target="projects-section"><i class="fas fa-folder-open"></i> Projects</a>
-                    <a class="nav-item" data-target="services-section"><i class="fas fa-layer-group"></i> Services</a>
-                    <a class="nav-item" data-target="about-section"><i class="fas fa-info-circle"></i> About</a>
-                    <a class="nav-item" data-target="global-reach-section"><i class="fas fa-globe-americas"></i> Global Reach</a>
-                    <a class="nav-item" data-target="vendors-section"><i class="fas fa-truck"></i> Vendors</a>
-                    <a class="nav-item" data-target="contact-section"><i class="fas fa-envelope"></i> Contact</a>
+                    <a class="nav-item active" data-target="home-section" data-title="Dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                    <a class="nav-item" data-target="projects-section" data-title="Projects"><i class="fas fa-folder-open"></i> Projects</a>
+                    <a class="nav-item" data-target="services-section" data-title="Services"><i class="fas fa-layer-group"></i> Services</a>
+                    <a class="nav-item" data-target="about-section" data-title="About"><i class="fas fa-info-circle"></i> About</a>
+                    <a class="nav-item" data-target="global-reach-section" data-title="Global Reach"><i class="fas fa-globe-americas"></i> Global Reach</a>
+                    <a class="nav-item" data-target="vendors-section" data-title="Vendors"><i class="fas fa-truck"></i> Vendors</a>
+                    <a class="nav-item" data-target="contact-section" data-title="Contact & Inquiries"><i class="fas fa-envelope"></i> Contact</a>
                 </nav>
                 <div class="sidebar-footer">
                     <button class="btn btn-outline" style="width: 100%;" onclick="logoutAdmin(event)"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -246,10 +277,10 @@
                             <i class="fas fa-bars" style="font-size: 1.25rem;"></i>
                         </button>
                         <span class="mobile-only"><img src="https://img.shehara.me/nirmana_logo_last.png" alt="Nirmana Logo" style="height: 30px; margin-right: 10px;"></span>
-                        Dashboard
+                        <span id="current-section-title">Dashboard</span>
                     </div>
                     <div style="display: flex; gap: 0.75rem;">
-                        <button class="btn btn-ghost" onclick="window.open('https://main.shehara.me', '_blank')" title="View Site"><i class="fas fa-globe"></i> <span class="mobile-only-hide">View</span></button>
+                        <button class="btn btn-ghost" onclick="window.open('https://main.shehara.me', '_blank')" title="View Site"><i class="fas fa-globe"></i> <span class="mobile-only-hide">View Site</span></button>
                         <button class="btn btn-outline mobile-only" onclick="logoutAdmin(event)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 </header>
@@ -257,19 +288,96 @@
                 <div class="content-area">
                     <!-- Home Section -->
                     <div id="home-section" class="dashboard-section active">
-                        <h2 class="section-label"><i class="fas fa-home"></i> Home</h2>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                            <div class="card">
-                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">Total Projects</p>
-                                <h2 style="font-size: 2rem; margin-top: 0.5rem;" id="stat-projects">0</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <div>
+                                <h1 style="font-size: 1.75rem; color: var(--text-main);">Dashboard Overview</h1>
+                                <p>Track your construction projects and site performance</p>
                             </div>
-                            <div class="card">
-                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">Active Vendors</p>
-                                <h2 style="font-size: 2rem; margin-top: 0.5rem;">12</h2>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-outline btn-sm" onclick="refreshDashboardAnalytics()"><i class="fas fa-sync-alt"></i> Sync Data</button>
+                                <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export Reports</button>
                             </div>
-                            <div class="card">
-                                <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">New Messages</p>
-                                <h2 style="font-size: 2rem; margin-top: 0.5rem;">5</h2>
+                        </div>
+
+                        <!-- Top Stats Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                            <div class="card" style="padding: 1.25rem; border-left: 4px solid var(--primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Projects</p>
+                                        <h2 style="font-size: 2rem; margin: 0.5rem 0;" id="stat-projects">0</h2>
+                                        <p style="color: #10B981; font-size: 0.75rem; font-weight: 500;"><i class="fas fa-arrow-up"></i> +12% from last month</p>
+                                    </div>
+                                    <div style="background: #FEE2E2; color: var(--primary); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="padding: 1.25rem; border-left: 4px solid #F59E0B;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Inquiries</p>
+                                        <h2 style="font-size: 2rem; margin: 0.5rem 0;" id="stat-inquiries">0</h2>
+                                        <p style="color: #10B981; font-size: 0.75rem; font-weight: 500;"><i class="fas fa-arrow-up"></i> +5% new leads</p>
+                                    </div>
+                                    <div style="background: #FEF3C7; color: #D97706; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                        <i class="fas fa-envelope-open-text"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="padding: 1.25rem; border-left: 4px solid #3B82F6;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Visits</p>
+                                        <h2 style="font-size: 2rem; margin: 0.5rem 0;" id="stat-visits">0</h2>
+                                        <p style="color: #10B981; font-size: 0.75rem; font-weight: 500;"><i class="fas fa-arrow-up"></i> +18% growth</p>
+                                    </div>
+                                    <div style="background: #DBEAFE; color: #2563EB; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="padding: 1.25rem; border-left: 4px solid #10B981;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Vendors</p>
+                                        <h2 style="font-size: 2rem; margin: 0.5rem 0;" id="stat-vendors">0</h2>
+                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Trusted partners</p>
+                                    </div>
+                                    <div style="background: #D1FAE5; color: #059669; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                        <i class="fas fa-truck-loading"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="dashboard-grid-2" style="margin-bottom: 1.5rem;">
+                            <div class="card" style="min-height: 400px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                    <h3 style="font-size: 1.1rem;">Traffic Analytics</h3>
+                                    <select class="form-control" style="width: auto; padding: 0.25rem 0.5rem; height: auto;" id="traffic-period" onchange="updateTrafficChart()">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <div style="height: 300px; position: relative;">
+                                    <canvas id="trafficChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="card" style="min-height: 400px;">
+                                <h3 style="font-size: 1.1rem; margin-bottom: 1.5rem;">Geographic Distribution</h3>
+                                <div style="height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                    <canvas id="geoChart"></canvas>
+                                </div>
+                                <div id="country-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <!-- Populated via JS -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -692,6 +800,9 @@
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
+                const sectionTitle = item.dataset.title || 'Dashboard';
+                document.getElementById('current-section-title').textContent = sectionTitle;
+
                 if(window.innerWidth <= 1024) {
                     const targetEl = document.getElementById(item.dataset.target);
                     if(targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
@@ -703,7 +814,13 @@
                 dashboardSections.forEach(s => s.classList.remove('active'));
                 
                 item.classList.add('active');
-                document.getElementById(item.dataset.target).classList.add('active');
+                const targetSection = document.getElementById(item.dataset.target);
+                if (targetSection) targetSection.classList.add('active');
+
+                // If switching to dashboard, refresh analytics
+                if (item.dataset.target === 'home-section') {
+                    if (typeof refreshDashboardAnalytics === 'function') refreshDashboardAnalytics();
+                }
             });
         });
 

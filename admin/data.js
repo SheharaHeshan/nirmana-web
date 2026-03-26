@@ -22,6 +22,9 @@ async function refreshAdminDashboard() {
         renderGlobalReach(data.global_reach || []);
         renderInquiries(data.inquiries || []);
         populateForms(data.about, data.contact);
+        
+        // Load Analytics after main data
+        refreshDashboardAnalytics();
     }
 }
 
@@ -34,6 +37,109 @@ async function getAllData() {
     } catch (err) {
         console.error("Failed to fetch data:", err);
     }
+}
+
+// --- ANALYTICS & CHARTS ---
+let trafficChart = null;
+let geoChart = null;
+let lastAnalyticsData = null;
+
+async function refreshDashboardAnalytics() {
+    try {
+        const response = await fetch(`${BASE_URL}/analytics`);
+        const analytics = await response.json();
+        lastAnalyticsData = analytics;
+        
+        // Update Stats
+        document.getElementById('stat-projects').innerText = analytics.projectsCount || 0;
+        document.getElementById('stat-inquiries').innerText = analytics.inquiriesCount || 0;
+        document.getElementById('stat-visits').innerText = (analytics.totalVisits || 0).toLocaleString();
+        document.getElementById('stat-vendors').innerText = window.adminDataCache?.vendors?.length || 0;
+        
+        renderCharts(analytics);
+        renderCountryList(analytics.countries);
+    } catch (err) {
+        console.error("Failed to fetch analytics:", err);
+    }
+}
+
+function renderCharts(data) {
+    const ctxTraffic = document.getElementById('trafficChart')?.getContext('2d');
+    const ctxGeo = document.getElementById('geoChart')?.getContext('2d');
+    
+    if (!ctxTraffic || !ctxGeo) return;
+
+    const period = document.getElementById('traffic-period').value;
+    const trafficData = data.traffic[period];
+    
+    // Traffic Chart (Line)
+    if (trafficChart) trafficChart.destroy();
+    trafficChart = new Chart(ctxTraffic, {
+        type: 'line',
+        data: {
+            labels: trafficData.map(d => d.label),
+            datasets: [{
+                label: 'Visits',
+                data: trafficData.map(d => d.visits),
+                borderColor: '#E63946',
+                backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#E63946',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f0f0f0' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Geo Chart (Doughnut)
+    if (geoChart) geoChart.destroy();
+    geoChart = new Chart(ctxGeo, {
+        type: 'doughnut',
+        data: {
+            labels: data.countries.map(c => c.name),
+            datasets: [{
+                data: data.countries.map(c => c.visits),
+                backgroundColor: ['#E63946', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'],
+                hoverOffset: 4,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            cutout: '70%'
+        }
+    });
+}
+
+function updateTrafficChart() {
+    if (lastAnalyticsData) renderCharts(lastAnalyticsData);
+}
+
+function renderCountryList(countries) {
+    const list = document.getElementById('country-list');
+    if (!list) return;
+    list.innerHTML = countries.map(c => `
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="https://flagcdn.com/${c.code.toLowerCase()}.svg" style="width: 20px; border-radius: 2px;">
+                <span>${c.name}</span>
+            </div>
+            <span style="font-weight: 600;">${c.visits}</span>
+        </div>
+    `).join('');
 }
 
 // --- PROJECT ACTIONS (D1 + R2) ---
