@@ -46,18 +46,28 @@ async function getProjectById(id) {
     return projects.find(p => p.id === parseInt(id));
 }
 
-async function renderProjectsGrid(containerId, limit = null) {
+let currentFilter = 'all';
+
+async function renderProjectsGrid(containerId, limit = null, country = 'all') {
+    currentFilter = country;
     const container = document.getElementById(containerId);
     if (!container) return;
 
     // Loading State
     container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin fa-2x"></i> <p style="margin-top: 10px;">Loading projects...</p></div>';
 
-    const projects = await getProjects();
+    let projects = await getProjects();
+    
+    if (country !== 'all') {
+        projects = projects.filter(p => p.country === country);
+    }
+    
     const displayProjects = limit ? projects.slice(0, limit) : projects;
 
-    if (displayProjects.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><p>No projects found.</p></div>';
+    if (projects.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><p>No projects found in this region.</p></div>';
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
         return;
     }
 
@@ -93,6 +103,26 @@ async function renderProjectsGrid(containerId, limit = null) {
         `;
     });
     container.innerHTML = html;
+
+    // Handle "Load More" button visibility based on filtered results
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        if (limit && projects.length > limit) {
+            loadMoreBtn.style.display = 'inline-block';
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
+    }
+}
+
+async function filterByCountry(country, btn) {
+    // Update active button state
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Reset limit and render
+    const limit = 6; // Initial limit
+    await renderProjectsGrid('featured-projects', limit, country);
 }
 
 async function renderAboutSection() {
@@ -115,25 +145,41 @@ async function renderAboutSection() {
         aboutContent.textContent = data.about.story;
     }
 
-    // Render Global Reach
+    // Render Global Reach & Filter Buttons
     const reachContainer = document.querySelector('.footprint-locations');
-    if (reachContainer && data.global_reach && data.global_reach.length > 0) {
-        reachContainer.innerHTML = data.global_reach.map(r => {
-            const flagMap = { 
-                'Sri Lanka': 'lk', 'Maldives': 'mv', 'USA': 'us', 
-                'UK': 'gb', 'Australia': 'au', 'UAE': 'ae', 'India': 'in' 
-            };
-            const code = flagMap[r.country_name] || 'un';
-            return `
-                <div class="location-item">
-                    <img src="https://flagcdn.com/${code.toLowerCase()}.svg" alt="${r.country_name} Flag" class="location-flag">
-                    <div class="location-info">
-                        <span class="location-country">${r.country_name}</span>
-                        <span class="location-role">${r.description}</span>
-                    </div>
-                </div>
-            `;
+    const filterContainer = document.getElementById('country-filters');
+    
+    if (data.global_reach && data.global_reach.length > 0) {
+        // Clear existing dynamic filters (preserving the "All" button)
+        const dynamicFilters = data.global_reach.map(r => {
+            return `<button class="filter-btn" onclick="filterByCountry('${r.country_name}', this)">${r.country_name}</button>`;
         }).join('');
+        
+        if (filterContainer) {
+            const allBtn = filterContainer.querySelector('button[onclick*="all"]');
+            filterContainer.innerHTML = '';
+            if (allBtn) filterContainer.appendChild(allBtn);
+            filterContainer.innerHTML += dynamicFilters;
+        }
+
+        if (reachContainer) {
+            reachContainer.innerHTML = data.global_reach.map(r => {
+                const flagMap = { 
+                    'Sri Lanka': 'lk', 'Maldives': 'mv', 'USA': 'us', 
+                    'UK': 'gb', 'Australia': 'au', 'UAE': 'ae', 'India': 'in' 
+                };
+                const code = flagMap[r.country_name] || 'un';
+                return `
+                    <div class="location-item">
+                        <img src="https://flagcdn.com/${code.toLowerCase()}.svg" alt="${r.country_name} Flag" class="location-flag">
+                        <div class="location-info">
+                            <span class="location-country">${r.country_name}</span>
+                            <span class="location-role">${r.description}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 }
 

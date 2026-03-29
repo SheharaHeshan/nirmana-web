@@ -153,9 +153,14 @@
             <div class="section-header">
                 <h2 class="section-title">FEATURED <span class="text-red">PROJECTS</span></h2>
                 <div class="divider"></div>
-                <p class="section-desc">Explore our world-class portfolio of commercial and residential flooring
-                    developments.
-                </p>
+                <p class="section-desc">Explore our world-class portfolio of commercial and residential flooring developments.</p>
+            </div>
+
+            <div class="filter-container" style="text-align: center; margin-bottom: 40px;">
+                <div id="country-filters" class="project-filters" style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <button class="filter-btn active" onclick="filterByCountry('all', this)">All</button>
+                    <!-- Categories will be loaded dynamically -->
+                </div>
             </div>
 
             <div class="project-grid" id="featured-projects">
@@ -164,9 +169,13 @@
                     <i class="fas fa-spinner fa-spin fa-2x"></i>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 50px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                <button id="load-more-btn" class="btn btn-primary" onclick="loadMoreProjects()">Load More Projects</button>
-                <a href="projects.html" class="text-red" style="font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">View All Projects Catalogue</a>
+            <div
+                style="text-align: center; margin-top: 50px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <button id="load-more-btn" class="btn btn-primary" onclick="loadMoreProjects()">Load More
+                    Projects</button>
+                <a href="projects.html" class="text-red"
+                    style="font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">View
+                    All Projects Catalogue</a>
             </div>
         </div>
     </section>
@@ -183,7 +192,8 @@
 
             <div class="services-grid">
                 <!-- Data will be loaded from Worker via data.js -->
-                <div class="loader" style="grid-column: 1/-1; display: flex; justify-content: center; padding: 3rem; color: var(--red);">
+                <div class="loader"
+                    style="grid-column: 1/-1; display: flex; justify-content: center; padding: 3rem; color: var(--red);">
                     <i class="fas fa-spinner fa-spin fa-2x"></i>
                 </div>
             </div>
@@ -193,40 +203,32 @@
     <!-- About Section -->
     <section id="about" class="section about-section bg-light">
         <div class="container about-container">
-            <div class="about-image-wrapper">
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800"
-                    alt="Construction engineers discussing" class="about-image">
-                <div class="experience-badge">
-                    <span class="num">10</span>
-                    <span class="text">Years<br>Experience</span>
-                </div>
-            </div>
-            <div class="about-content">
-                <h2 class="section-title">ABOUT <span class="text-red">US</span></h2>
-                <div class="divider align-left"></div>
-                <p>Loading about information...</p>
-                <!-- Extra paragraphs removed for dynamic content -->
-
-                <div class="global-footprint">
-                    <h3 class="footprint-title">Global <span class="text-red">Reach</span></h3>
-                    <div class="footprint-locations">
-                        <div class="location-item">
-                            <img src="https://flagcdn.com/lk.svg" alt="Sri Lanka Flag" class="location-flag">
-                            <div class="location-info">
-                                <span class="location-country">Sri Lanka</span>
-                                <span class="location-role">Headquarters & Projects</span>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <img src="https://flagcdn.com/mv.svg" alt="Maldives Flag" class="location-flag">
-                            <div class="location-info">
-                                <span class="location-country">Maldives</span>
-                                <span class="location-role">Overseas Projects</span>
-                            </div>
-                        </div>
+            <div class="about-left-col">
+                <div class="about-image-wrapper">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800"
+                        alt="Construction engineers discussing" class="about-image">
+                    <div class="experience-badge">
+                        <span class="num">10</span>
+                        <span class="text">Years<br>Experience</span>
                     </div>
                 </div>
             </div>
+
+            <div class="about-right-col">
+                <div class="about-content">
+                    <h2 class="section-title">ABOUT <span class="text-red">US</span></h2>
+                    <div class="divider align-left"></div>
+                    <p>Loading about information...</p>
+                </div>
+            </div>
+
+            <div class="global-footprint">
+                <h3 class="footprint-title">Global <span class="text-red">Reach</span></h3>
+                <div class="footprint-locations">
+                    <!-- Data will be loaded from Worker via data.js -->
+                </div>
+            </div>
+
         </div>
     </section>
 
@@ -324,27 +326,30 @@
     <script src="script.js?v=3"></script>
     <script>
         let currentProjectLimit = 6;
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             renderProjectsGrid('featured-projects', 6);
         });
 
         async function loadMoreProjects() {
             const btn = document.getElementById('load-more-btn');
-            if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
             currentProjectLimit += 6;
-            await renderProjectsGrid('featured-projects', currentProjectLimit);
-            
-            if(btn) btn.innerHTML = 'Load More Projects';
-            
-            // Check if we reached all projects to potentially hide the button
-            const projects = await getProjects();
-            if(currentProjectLimit >= projects.length) {
-                if(btn) btn.style.display = 'none';
-            }
+            // currentFilter is defined in data.js
+            await renderProjectsGrid('featured-projects', currentProjectLimit, typeof currentFilter !== 'undefined' ? currentFilter : 'all');
+
+            if (btn) btn.innerHTML = 'Load More Projects';
         }
+
+        // Override filterByCountry to also reset the local limit
+        const originalFilterByCountry = filterByCountry;
+        filterByCountry = async function(country, btn) {
+            currentProjectLimit = 6; // Reset limit when filter changes
+            await originalFilterByCountry(country, btn);
+        };
     </script>
+
 </body>
 
 </html>
