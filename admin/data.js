@@ -14,7 +14,7 @@ async function refreshAdminDashboard() {
     const data = await getAllData();
     if (data) {
         window.adminDataCache = data;
-        renderProjects(data.projects, data.sectors, data.finishes);
+        renderProjects(data.projects, data.sectors, data.finishes, data.global_reach);
         renderSectors(data.sectors);
         renderFinishes(data.finishes);
         renderVendors(data.vendors);
@@ -587,7 +587,7 @@ function getFlagUrl(country) {
 
 // --- RENDERING LOGIC (UI UPDATES) ---
 
-function renderProjects(projects, sectors, finishes) {
+function renderProjects(projects, sectors, finishes, globalReach) {
     const tbody = document.getElementById('admin-project-list');
     if (!tbody) return;
     tbody.innerHTML = projects.map(p => {
@@ -632,6 +632,15 @@ function renderProjects(projects, sectors, finishes) {
         finishSelect.innerHTML = '<option value="">Select Finish</option>' + 
             finishes.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
         finishSelect.setAttribute('name', 'finish_id');
+    }
+
+    const countrySelect = document.getElementById('country');
+    if (countrySelect && globalReach) {
+        // preserve current selection if any
+        const currentVal = countrySelect.value;
+        countrySelect.innerHTML = '<option value="">Select a country</option>' + 
+            globalReach.map(r => `<option value="${r.country_name}">${r.country_name}</option>`).join('');
+        if (currentVal) countrySelect.value = currentVal;
     }
 }
 
