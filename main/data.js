@@ -1,4 +1,4 @@
-const BASE_URL = 'https://admin-handler.sheshan.workers.dev/api';
+const BASE_URL = 'https://admin-handler.nirmana-constructions.workers.dev/api';
 let globalDataCache = null;
 
 async function getAllData() {
