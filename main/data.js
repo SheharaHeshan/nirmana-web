@@ -307,7 +307,7 @@ async function initInquiryForm() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     }),
-                    fetch('https://email-sender.sheshan.workers.dev', {
+                    fetch('https://email-sender.nirmana-constructions.workers.dev', {
                         method: 'POST',
                         body: formData
                     })
