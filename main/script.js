@@ -56,17 +56,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
+    const navbarLogo = document.getElementById('navbar-logo');
+
+    function switchLogo(type) {
+        if (!navbarLogo) return;
+        const src = type === 'dark' 
+            ? 'https://img.nirmanaconstructions.com/nirmana_logo_last.png' 
+            : 'https://img.nirmanaconstructions.com/new_white_nirmana_logo.png';
+        const expectedFile = src.split('/').pop();
+        
+        if (!navbarLogo.src.includes(expectedFile)) {
+            navbarLogo.style.opacity = '0';
+            setTimeout(() => {
+                navbarLogo.src = src;
+                navbarLogo.style.opacity = '1';
+            }, 150);
+        }
+    }
 
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
+            switchLogo('dark');
         } else {
-            navbar.classList.remove('scrolled');
+            const menuActive = document.getElementById('mobile-menu') && document.getElementById('mobile-menu').classList.contains('active');
+            if (!menuActive) {
+                navbar.classList.remove('scrolled');
+                switchLogo('white');
+            }
         }
 
         // Update active nav link based on scroll position
         updateActiveNavLink();
     });
+
+    // Trigger scroll event on load to correctly set initial navbar state
+    window.dispatchEvent(new Event('scroll'));
 
     // Mobile Menu Toggle
     const hamburger = document.getElementById('hamburger');
@@ -83,12 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = 'hidden';
             // Also add background styling to navbar when menu is open so it stays visible
             navbar.classList.add('scrolled');
+            switchLogo('dark');
         } else {
             icon.classList.remove('fa-times');
             icon.classList.add('fa-bars');
             document.body.style.overflow = 'auto';
             if (window.scrollY <= 50) {
                 navbar.classList.remove('scrolled');
+                switchLogo('white');
             }
         }
     }
