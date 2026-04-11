@@ -49,7 +49,7 @@ export default {
 
       msg.setSender({
         name: "Nirmana Constructions",
-        addr: "no-reply@NirmanaConstructions.com",
+        addr: "no-reply@nirmanaconstructions.com",
       });
 
       msg.setRecipient("iminoka1977@gmail.com");
@@ -137,7 +137,7 @@ Project Details: ${project}
       });
 
       const emailMessage = new EmailMessage(
-        "no-reply@NirmanaConstructions.com",
+        "no-reply@nirmanaconstructions.com",
         "iminoka1977@gmail.com",
         msg.asRaw()
       );
