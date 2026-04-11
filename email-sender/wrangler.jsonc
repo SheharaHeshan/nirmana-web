@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "email-sender",
+  "main": "src/index.js",
+  "compatibility_date": "2026-04-09",
+  "observability": {
+    "enabled": true
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "send_email": [
+    {
+      "name": "NOTIFY_ME",
+      "destination_address": "iminoka1977@gmail.com"
+    }
+  ]
+}

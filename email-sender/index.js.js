@@ -49,10 +49,10 @@ export default {
 
       msg.setSender({
         name: "Nirmana Constructions",
-        addr: "no-reply@shehara.me",
+        addr: "no-reply@NirmanaConstructions.com",
       });
 
-      msg.setRecipient("sheharaheshan@gmail.com");
+      msg.setRecipient("iminoka1977@gmail.com");
       msg.setSubject(`New Contact: ${name} - ${floorType}`);
 
       msg.addMessage({
@@ -137,8 +137,8 @@ Project Details: ${project}
       });
 
       const emailMessage = new EmailMessage(
-        "no-reply@shehara.me",
-        "sheharaheshan@gmail.com",
+        "no-reply@NirmanaConstructions.com",
+        "iminoka1977@gmail.com",
         msg.asRaw()
       );
 
