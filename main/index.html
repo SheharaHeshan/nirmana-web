@@ -345,7 +345,7 @@
                         <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                         <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.facebook.com/share/1csbiRzpAg/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                        <a href="https://www.facebook.com/share/1csbiRzpAg/" onclick="openFacebookApp(event, 'https://www.facebook.com/share/1csbiRzpAg/')" aria-label="Facebook">
   <i class="fab fa-facebook-f"></i>
 </a>
                     </div>
@@ -385,6 +385,25 @@
             currentProjectLimit = 6; // Reset limit when filter changes
             await originalFilterByCountry(country, btn);
         };
+
+        function openFacebookApp(event, webUrl) {
+  // Mobile check
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    event.preventDefault();
+    var appUrl = "fb://facewebmodal/f?href=" + encodeURIComponent(webUrl);
+    
+    // Attempt to launch the Facebook App
+    window.location.href = appUrl;
+    
+    // Fallback to web link if the app isn't installed
+    setTimeout(function() {
+      window.location.href = webUrl;
+    }, 500);
+  }
+}
+        
     </script>
 
 </body>
